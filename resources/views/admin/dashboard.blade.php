@@ -98,7 +98,6 @@
   </div>
 
   {{-- Tables --}}
-  
   <div class="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-4">
     <div class="card-strong overflow-hidden">
     <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
