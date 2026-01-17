@@ -9,7 +9,7 @@
     <form method="GET" class="flex items-center gap-2">
       <span class="text-sm text-slate-600 font-semibold">ปี</span>
       <input name="year" value="{{ $chart['year'] ?? now()->year }}"
-             class="w-28 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+             class="w-28 rounded-xl border border-slate-500 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
       <button class="rounded-xl bg-indigo-700 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-600">
         ดูรายงาน
       </button>
@@ -98,11 +98,13 @@
   </div>
 
   {{-- Tables --}}
+  
   <div class="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-4">
+    <div class="card-strong overflow-hidden">
     <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
       <div class="flex items-center justify-between mb-3">
         <div class="font-bold">รายการชำระเงินรอตรวจสอบ</div>
-        <a href="{{ route('admin.payments.pending') }}" class="text-sm text-indigo-700 font-semibold hover:underline">
+        <a href="{{ route('admin.payments.pending') }}" class="rounded-xl bg-indigo-700 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-600">
           ดูทั้งหมด
         </a>
       </div>
@@ -134,6 +136,9 @@
         </table>
       </div>
     </div>
+    </div>
+    
+    
 
     <div class="card-strong overflow-hidden">
     <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">

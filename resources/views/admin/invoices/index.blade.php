@@ -107,7 +107,7 @@
               <td class="px-5 py-3">
                 <div class="font-semibold text-slate-900">{{ $tenantName }}</div>
                 <div class="text-xs text-slate-500">{{ $tenantEmail }}</div>
-              </td>
+              </td> 
 
               <td class="px-5 py-3">
                 <span class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-900">

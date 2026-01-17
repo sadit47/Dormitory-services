@@ -30,13 +30,14 @@
           <div>
             <label class="block text-sm font-bold mb-1">ชื่อผู้ใช้</label>
             <input name="name" value="{{ old('name', auth()->user()->name) }}"
-                   class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                   class="w-full rounded-2xl border border-slate-500 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
                    required>
+                   
           </div>
           <div>
             <label class="block text-sm font-bold mb-1">เบอร์โทร</label>
             <input name="phone" value="{{ old('phone', auth()->user()->phone) }}"
-                   class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                   class="w-full rounded-2xl border border-slate-500 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
                    placeholder="เช่น 0123456789">
           </div>
         </div>
@@ -46,9 +47,10 @@
             บันทึก
           </button>
           <a href="{{ route('admin.dashboard') }}"
-             class="px-5 py-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 font-bold">
+             class="px-5 py-3 rounded-2xl border bg-slate-900 text-white hover:bg-slate-800 font-bold">
             ย้อนกลับ
           </a>
+    
         </div>
       </form>
     </div>
