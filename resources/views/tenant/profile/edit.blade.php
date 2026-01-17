@@ -57,7 +57,7 @@
           </div>
         </div>
 
-        <button class="px-4 py-2 rounded-xl bg-indigo-700 text-white font-semibold">
+        <button class="px-6 py-3 rounded-xl bg-indigo-700 text-white text-sm font-semibold hover:bg-indigo-600">
           บันทึก
         </button>
       </form>

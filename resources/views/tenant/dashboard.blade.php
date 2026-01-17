@@ -156,7 +156,7 @@
           <div class="text-lg font-semibold text-slate-900">ใบแจ้งหนี้ล่าสุด</div>
           <div class="text-sm text-slate-500">ดู PDF / ใบเสร็จ / อัปโหลดสลิป</div>
         </div>
-        <a href="{{ route('tenant.invoices.index') }}" class="text-sm text-indigo-700 font-semibold hover:underline">
+        <a href="{{ route('tenant.invoices.index') }}" class="rounded-xl bg-indigo-700 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-600">
           ดูทั้งหมด →
         </a>
       </div>
@@ -206,8 +206,6 @@
           {{-- ✅ ปุ่มไม่ซ้อนบรรทัด + เรียงเป็นแถว --}}
           <td class="px-5 py-3 text-right">
           <div class="inline-flex flex-wrap justify-end gap-2">
-           <a class="text-xs px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200"
-               href="{{ route('tenant.invoices.pdf', $inv) }}">PDF</a>
 
             @if($inv->status === 'paid' && $inv->receipt_no)
       <a class="text-xs px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
