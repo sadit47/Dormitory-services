@@ -1,178 +1,136 @@
-{{-- resources/views/admin/invoices/index.blade.php --}}
 <x-admin-layout title="ใบแจ้งหนี้">
-  <x-slot name="actions">
-    <a href="{{ route('admin.invoices.create') }}"
-       class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 transition">
-      + ออกใบแจ้งหนี้
-    </a>
-  </x-slot>
-
-  {{-- Filters --}}
-  <div class="card-strong p-5 mb-4">
-    <form class="grid grid-cols-1 md:grid-cols-4 gap-3" method="GET">
-      <input name="q" value="{{ $q }}"
-             class="w-full rounded-xl border border-slate-300 px-4 py-2"
-             placeholder="ค้นหา: เลขที่ / ชื่อ / อีเมล">
-
-      <select name="type" class="w-full rounded-xl border border-slate-300 px-4 py-2">
-        <option value="">ทุกประเภท</option>
-        <option value="rent"     @selected($type==='rent')>ค่าเช่า</option>
-        <option value="utility"  @selected($type==='utility')>ค่าน้ำ/ค่าไฟ</option>
-        <option value="repair"   @selected($type==='repair')>ค่าซ่อม</option>
-        <option value="cleaning" @selected($type==='cleaning')>ค่าทำความสะอาด</option>
-      </select>
-
-      <select name="status" class="w-full rounded-xl border border-slate-300 px-4 py-2">
-        <option value="">ทุกสถานะ</option>
-        <option value="unpaid"    @selected($status==='unpaid')>ค้างชำระ</option>
-        <option value="paid"      @selected($status==='paid')>ชำระแล้ว</option>
-        <option value="cancelled" @selected($status==='cancelled')>ยกเลิก</option>
-      </select>
-
-      <div class="flex gap-2">
-        <button class="flex-1 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition">
-          ค้นหา
-        </button>
-        <a href="{{ route('admin.invoices.index') }}"
-           class="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold hover:bg-slate-50 transition">
-          ล้าง
-        </a>
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
+        <input id="q" placeholder="ค้นหาเลขใบแจ้งหนี้ / ชื่อ / อีเมล" class="w-full sm:w-80 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        <select id="type" class="w-full sm:w-auto min-w-[170px] rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm">
+          <option value="">ทุกประเภท</option>
+          <option value="rent">ค่าเช่า</option>
+          <option value="utility">ค่าน้ำไฟ</option>
+          <option value="repair">ค่าซ่อม</option>
+          <option value="cleaning">ค่าทำความสะอาด</option>
+        </select>
+        <select id="status" class="w-full sm:w-auto min-w-[170px] rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm">
+          <option value="">ทุกสถานะ</option>
+          <option value="unpaid">ยังไม่ชำระ</option>
+          <option value="paid">ชำระแล้ว</option>
+          <option value="overdue">เกินกำหนด</option>
+        </select>
+        <button id="btnSearch" class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black">ค้นหา</button>
       </div>
-    </form>
+      <a href="{{ route('admin.invoices.create') }}" class="inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-5 py-4 text-sm font-semibold text-white hover:bg-indigo-500 shadow-sm">+ สร้างใบแจ้งหนี้</a>
+    </div>
   </div>
 
-  {{-- Table --}}
-  <div class="card-strong overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="min-w-full text-sm">
-        <thead class="bg-slate-50 text-slate-600">
-          <tr>
-            <th class="text-left px-5 py-3">เลขที่</th>
-            <th class="text-left px-5 py-3">ผู้เช่า</th>
-            <th class="text-left px-5 py-3">ห้อง</th>
-            <th class="text-left px-5 py-3">งวด</th>
-            <th class="text-left px-5 py-3">ประเภท</th>
-            <th class="text-right px-5 py-3">ยอดสุทธิ</th>
-            <th class="text-left px-5 py-3">กำหนดชำระ</th>
-            <th class="text-left px-5 py-3">สถานะ</th>
-            <th class="text-right px-5 py-3">จัดการ</th>
-          </tr>
-        </thead>
+  <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+    <table class="min-w-full text-sm">
+      <thead class="bg-slate-50 text-slate-600">
+        <tr>
+          <th class="px-4 py-3 text-left font-semibold">เลขใบแจ้งหนี้</th>
+          <th class="px-4 py-3 text-left font-semibold">ผู้เช่า</th>
+          <th class="px-4 py-3 text-left font-semibold">ห้อง</th>
+          <th class="px-4 py-3 text-left font-semibold">ประเภท</th>
+          <th class="px-4 py-3 text-right font-semibold">ยอดรวม</th>
+          <th class="px-4 py-3 text-left font-semibold">สถานะ</th>
+          <th class="px-4 py-3 text-right font-semibold">จัดการ</th>
+        </tr>
+      </thead>
+      <tbody id="rows" class="divide-y divide-slate-100"></tbody>
+    </table>
+  </div>
 
-        <tbody class="divide-y">
-          @forelse($invoices as $inv)
-            @php
-              $typeText = match($inv->type){
-                'rent' => 'ค่าเช่า',
-                'utility' => 'ค่าน้ำ/ค่าไฟ',
-                'repair' => 'ค่าซ่อม',
-                'cleaning' => 'ค่าทำความสะอาด',
-                default => $inv->type
-              };
+  <div class="mt-6 flex items-center justify-between" id="pager"></div>
 
-              $typeBadge = match($inv->type){
-                'rent' => 'bg-indigo-50 text-indigo-700 border-indigo-200',
-                'utility' => 'bg-sky-50 text-sky-700 border-sky-200',
-                'repair' => 'bg-amber-50 text-amber-700 border-amber-200',
-                'cleaning' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                default => 'bg-slate-50 text-slate-700 border-slate-200'
-              };
+  <script>
+    const fmtMoney = (n) => new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(n||0));
+    const qs = (k) => new URLSearchParams(location.search).get(k) || '';
+    const setQs = (params) => {
+      const u = new URL(location.href);
+      Object.entries(params).forEach(([k,v]) => {
+        if (v === '' || v === null || v === undefined) u.searchParams.delete(k);
+        else u.searchParams.set(k, v);
+      });
+      history.replaceState({}, '', u.toString());
+    };
 
-              $statusText = match($inv->status){
-                'unpaid' => 'ค้างชำระ',
-                'paid' => 'ชำระแล้ว',
-                'cancelled' => 'ยกเลิก',
-                default => $inv->status
-              };
+    const typeLabel = (t) => ({ rent:'ค่าเช่า', utility:'ค่าน้ำไฟ', repair:'ค่าซ่อม', cleaning:'ค่าทำความสะอาด' }[t] || t || '-');
+    const statusLabel = (s) => ({ unpaid:'ยังไม่ชำระ', paid:'ชำระแล้ว', overdue:'เกินกำหนด' }[s] || s || '-');
 
-              $statusBadge = match($inv->status){
-                'unpaid' => 'bg-rose-50 text-rose-700 border-rose-200',
-                'paid' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                'cancelled' => 'bg-slate-50 text-slate-600 border-slate-200',
-                default => 'bg-slate-50 text-slate-700 border-slate-200'
-              };
+    async function fetchInvoices() {
+      const q = document.getElementById('q').value.trim();
+      const type = document.getElementById('type').value;
+      const status = document.getElementById('status').value;
+      const page = Number(qs('page') || 1);
+      setQs({ q, type, status, page });
 
-              $roomCode = $inv->room?->code ?? '-';
-              $tenantName = $inv->tenant?->user?->name ?? '-';
-              $tenantEmail = $inv->tenant?->user?->email ?? '';
-              $period = sprintf('%02d/%04d', $inv->period_month, $inv->period_year);
-              $due = $inv->due_date ? \Carbon\Carbon::parse($inv->due_date)->format('d/m/Y') : '-';
-            @endphp
+      const res = await window.api.get('/admin/invoices', { params: { q, type, status, per_page: 10, page }});
+      const data = res.data;
+      const tbody = document.getElementById('rows');
 
-            <tr class="hover:bg-slate-50">
-              <td class="px-5 py-3 font-semibold text-slate-900">
-                {{ $inv->invoice_no }}
-              </td>
-
-              <td class="px-5 py-3">
-                <div class="font-semibold text-slate-900">{{ $tenantName }}</div>
-                <div class="text-xs text-slate-500">{{ $tenantEmail }}</div>
-              </td> 
-
-              <td class="px-5 py-3">
-                <span class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-900">
-                  {{ $roomCode }}
-                </span>
-              </td>
-
-              <td class="px-5 py-3">{{ $period }}</td>
-
-              <td class="px-5 py-3">
-                <span class="inline-flex items-center rounded-xl border px-3 py-1.5 font-semibold {{ $typeBadge }}">
-                  {{ $typeText }}
-                </span>
-              </td>
-
-              <td class="px-5 py-3 text-right font-semibold text-slate-900">
-                {{ number_format($inv->total, 2) }}
-              </td>
-
-              <td class="px-5 py-3">{{ $due }}</td>
-
-              <td class="px-5 py-3">
-                <span class="inline-flex items-center rounded-xl border px-3 py-1.5 font-semibold {{ $statusBadge }}">
-                  {{ $statusText }}
-                </span>
-              </td>
-
-              <td class="px-5 py-3 text-right whitespace-nowrap">
-                <div class="flex gap-2 justify-end items-center">
-                  <a href="{{ route('admin.invoices.pdf', $inv) }}"
-                     class="inline-flex items-center justify-center rounded-xl bg-slate-900 text-white font-semibold px-5 py-2.5 text-sm hover:bg-slate-800 transition">
-                    PDF
-                  </a>
-
-                  <a href="{{ route('admin.invoices.edit', $inv) }}"
-                     class="inline-flex items-center justify-center rounded-xl bg-indigo-600 text-white font-semibold px-5 py-2.5 text-sm hover:bg-indigo-500 transition">
-                    แก้ไข
-                  </a>
-
-                  <form method="POST" action="{{ route('admin.invoices.destroy', $inv) }}"
-                        class="inline-flex"
-                        onsubmit="return confirm('ลบใบแจ้งหนี้นี้?')">
-                    @csrf @method('DELETE')
-                    <button type="submit"
-                            class="inline-flex items-center justify-center rounded-xl bg-rose-600 text-white font-semibold px-5 py-2.5 text-sm hover:bg-rose-500 transition">
-                      ลบ
-                    </button>
-                  </form>
-                </div>
-              </td>
-            </tr>
-          @empty
+      if (!data.data?.length) {
+        tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-6 text-slate-700">ไม่พบข้อมูลใบแจ้งหนี้</td></tr>`;
+      } else {
+        tbody.innerHTML = data.data.map(inv => {
+          const tenantName = inv.tenant?.user?.name || inv.tenant?.user?.email || '-';
+          const roomCode = inv.room?.code || '-';
+          return `
             <tr>
-              <td colspan="9" class="px-5 py-10 text-center text-slate-500">
-                ไม่พบข้อมูลใบแจ้งหนี้
+              <td class="px-4 py-3 font-semibold text-slate-900">${inv.invoice_no}</td>
+              <td class="px-4 py-3 text-slate-700">${tenantName}</td>
+              <td class="px-4 py-3 text-slate-700">${roomCode}</td>
+              <td class="px-4 py-3 text-slate-700">${typeLabel(inv.type)}</td>
+              <td class="px-4 py-3 text-right font-semibold text-slate-900">${fmtMoney(inv.total)}</td>
+              <td class="px-4 py-3 text-slate-700">${statusLabel(inv.status)}</td>
+              <td class="px-4 py-3 text-right">
+                <a href="/admin/invoices/${inv.id}/edit" class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50">แก้ไข</a>
+                <a href="/admin/invoices/${inv.id}/pdf" class="ml-2 inline-flex items-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50">PDF</a>
+                ${inv.status === 'paid' && inv.receipt_no ? `<a href="/admin/receipts/${inv.id}/pdf" class="ml-2 inline-flex items-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50">ใบเสร็จ</a>` : ''}
+                <button data-del="${inv.id}" class="ml-2 inline-flex items-center rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-black">ลบ</button>
               </td>
             </tr>
-          @endforelse
-        </tbody>
+          `;
+        }).join('');
 
-      </table>
-    </div>
+        tbody.querySelectorAll('button[data-del]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.del;
+            if (!confirm('ยืนยันลบใบแจ้งหนี้นี้?')) return;
+            try {
+              await window.api.delete(`/admin/invoices/${id}`);
+              await fetchInvoices();
+            } catch (e) {
+              alert(e?.response?.data?.message || 'ลบไม่สำเร็จ');
+            }
+          });
+        });
+      }
 
-    <div class="p-4">
-      {{ $invoices->links() }}
-    </div>
-  </div>
+      const pager = document.getElementById('pager');
+      pager.innerHTML = `
+        <div class="text-sm text-slate-600">หน้า ${data.current_page} / ${data.last_page}</div>
+        <div class="flex gap-2">
+          <button id="prev" class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50" ${data.current_page<=1?'disabled style="opacity:.5"':''}>ก่อนหน้า</button>
+          <button id="next" class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50" ${data.current_page>=data.last_page?'disabled style="opacity:.5"':''}>ถัดไป</button>
+        </div>
+      `;
+      pager.querySelector('#prev')?.addEventListener('click', () => {
+        if (data.current_page<=1) return;
+        setQs({ page: data.current_page-1 });
+        fetchInvoices();
+      });
+      pager.querySelector('#next')?.addEventListener('click', () => {
+        if (data.current_page>=data.last_page) return;
+        setQs({ page: data.current_page+1 });
+        fetchInvoices();
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('q').value = qs('q');
+      document.getElementById('type').value = qs('type');
+      document.getElementById('status').value = qs('status');
+      document.getElementById('btnSearch').addEventListener('click', () => { setQs({ page: 1 }); fetchInvoices(); });
+      fetchInvoices();
+    });
+  </script>
 </x-admin-layout>

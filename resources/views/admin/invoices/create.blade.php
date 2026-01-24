@@ -1,228 +1,186 @@
-{{-- resources/views/admin/invoices/create.blade.php --}}
-<x-admin-layout title="ออกใบแจ้งหนี้">
-  <div class="card-strong p-6 max-w-5xl">
-
-    <form method="POST" action="{{ route('admin.invoices.store') }}" class="space-y-5">
-      @csrf
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<x-admin-layout title="สร้างใบแจ้งหนี้">
+  <div class="max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <form id="frm" class="space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div>
           <label class="text-sm font-semibold">ผู้เช่า</label>
-          <select id="tenantSelect" name="tenant_id"
-                  class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2">
-            <option value="">-- เลือกผู้เช่า --</option>
-            @foreach($tenants as $t)
-              <option value="{{ $t->id }}" @selected(old('tenant_id')==$t->id)>
-                {{ $t->user?->name ?? '-' }} ({{ $t->user?->email ?? '-' }})
-              </option>
-            @endforeach
-          </select>
-          @error('tenant_id') <div class="mt-1 text-sm text-rose-600">{{ $message }}</div> @enderror
+          <select id="tenant_id" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"></select>
+          <div class="mt-1 text-sm text-rose-600" id="err_tenant_id"></div>
         </div>
 
-        {{-- ✅ ห้อง: auto จากผู้เช่า --}}
         <div>
-          <label class="text-sm font-semibold">ห้องปัจจุบัน (อัตโนมัติ)</label>
+          <label class="text-sm font-semibold">ห้อง (ถ้ามี)</label>
+          <select id="room_id" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"></select>
+          <div class="mt-1 text-sm text-rose-600" id="err_room_id"></div>
+        </div>
 
-          {{-- แสดงให้ดู --}}
-          <input id="roomDisplay" type="text"
-                 class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 bg-slate-100"
-                 placeholder="เลือกผู้เช่าเพื่อแสดงห้อง"
-                 readonly>
-
-          {{-- ส่งค่าไป backend --}}
-          <input type="hidden" name="room_id" id="roomId" value="{{ old('room_id') }}">
-
-          @error('room_id') <div class="mt-1 text-sm text-rose-600">{{ $message }}</div> @enderror
-
-          <div id="roomHint" class="mt-1 text-xs text-slate-500">
-            ระบบจะดึงห้องจาก “ห้องที่ผู้เช่าพักอยู่ตอนนี้”
-          </div>
+        <div>
+          <label class="text-sm font-semibold">ประเภท</label>
+          <select id="type" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+            <option value="rent">ค่าเช่า</option>
+            <option value="utility">ค่าน้ำ/ไฟ</option>
+            <option value="repair">ค่าซ่อม</option>
+            <option value="cleaning">ค่าทำความสะอาด</option>
+          </select>
+          <div class="mt-1 text-sm text-rose-600" id="err_type"></div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div>
-          <label class="text-sm font-semibold">ประเภท</label>
-          <select name="type" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2">
-            <option value="rent"     @selected(old('type','rent')==='rent')>ค่าเช่า</option>
-            <option value="utility"  @selected(old('type')==='utility')>ค่าน้ำ/ค่าไฟ</option>
-            <option value="repair"   @selected(old('type')==='repair')>ค่าซ่อม</option>
-            <option value="cleaning" @selected(old('type')==='cleaning')>ค่าทำความสะอาด</option>
-          </select>
-          @error('type') <div class="mt-1 text-sm text-rose-600">{{ $message }}</div> @enderror
-        </div>
-
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <div>
           <label class="text-sm font-semibold">เดือน</label>
-          <input type="number" name="period_month" min="1" max="12"
-                 value="{{ old('period_month', now()->month) }}"
-                 class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2">
-          @error('period_month') <div class="mt-1 text-sm text-rose-600">{{ $message }}</div> @enderror
+          <input id="period_month" type="number" min="1" max="12" value="{{ now()->month }}" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500" />
+          <div class="mt-1 text-sm text-rose-600" id="err_period_month"></div>
         </div>
-
         <div>
           <label class="text-sm font-semibold">ปี</label>
-          <input type="number" name="period_year" min="2000" max="2100"
-                 value="{{ old('period_year', now()->year) }}"
-                 class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2">
-          @error('period_year') <div class="mt-1 text-sm text-rose-600">{{ $message }}</div> @enderror
+          <input id="period_year" type="number" min="2000" max="2100" value="{{ now()->year }}" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500" />
+          <div class="mt-1 text-sm text-rose-600" id="err_period_year"></div>
         </div>
-
         <div>
-          <label class="text-sm font-semibold">กำหนดชำระ</label>
-          <input type="date" name="due_date" value="{{ old('due_date') }}"
-                 class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2">
-          @error('due_date') <div class="mt-1 text-sm text-rose-600">{{ $message }}</div> @enderror
+          <label class="text-sm font-semibold">วันครบกำหนด</label>
+          <input id="due_date" type="date" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500" />
+          <div class="mt-1 text-sm text-rose-600" id="err_due_date"></div>
         </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label class="text-sm font-semibold">ส่วนลด</label>
-          <input type="number" step="0.01" name="discount" value="{{ old('discount', 0) }}"
-                 class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2">
-          @error('discount') <div class="mt-1 text-sm text-rose-600">{{ $message }}</div> @enderror
+          <input id="discount" type="number" min="0" step="0.01" value="0" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500" />
+          <div class="mt-1 text-sm text-rose-600" id="err_discount"></div>
         </div>
       </div>
 
-      {{-- Items --}}
-      <div class="rounded-2xl border border-slate-200 bg-white p-4">
+      <div>
         <div class="flex items-center justify-between">
-          <div class="font-bold text-slate-900">รายการ</div>
-          <button type="button" id="addItem"
-                  class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">
-            + เพิ่มรายการ
-          </button>
+          <div class="text-sm font-extrabold text-slate-900">รายการ</div>
+          <button type="button" id="btnAdd" class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50">+ เพิ่มรายการ</button>
         </div>
 
-        <div class="mt-4 overflow-x-auto">
-          <table class="min-w-full text-sm" id="itemsTable">
+        <div class="mt-3 overflow-hidden rounded-2xl border border-slate-200">
+          <table class="min-w-full text-sm">
             <thead class="bg-slate-50 text-slate-600">
               <tr>
-                <th class="text-left px-3 py-2">รายละเอียด</th>
-                <th class="text-right px-3 py-2 w-32">จำนวน</th>
-                <th class="text-right px-3 py-2 w-40">ราคาต่อหน่วย</th>
-                <th class="text-right px-3 py-2 w-40">รวม</th>
-                <th class="px-3 py-2 w-24"></th>
+                <th class="px-4 py-3 text-left font-semibold">รายละเอียด</th>
+                <th class="px-4 py-3 text-right font-semibold">จำนวน</th>
+                <th class="px-4 py-3 text-right font-semibold">ราคา/หน่วย</th>
+                <th class="px-4 py-3 text-right font-semibold">รวม</th>
+                <th class="px-4 py-3"></th>
               </tr>
             </thead>
-            <tbody class="divide-y" id="itemsBody"></tbody>
+            <tbody id="items" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
-
-        @error('items') <div class="mt-2 text-sm text-rose-600">{{ $message }}</div> @enderror
+        <div class="mt-1 text-sm text-rose-600" id="err_items"></div>
       </div>
 
       <div class="flex gap-2">
-        <a href="{{ route('admin.invoices.index') }}"
-           class="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold hover:bg-slate-50 transition">
-          ย้อนกลับ
-        </a>
-
-        <button class="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 transition">
-          บันทึกใบแจ้งหนี้
-        </button>
+        <a href="{{ route('admin.invoices.index') }}" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50">ย้อนกลับ</a>
+        <button class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500">บันทึก</button>
       </div>
     </form>
   </div>
 
   <script>
-    // ===== Items =====
-    const body = document.getElementById('itemsBody');
-    const addBtn = document.getElementById('addItem');
+    const clearErr = () => ['tenant_id','room_id','type','period_month','period_year','due_date','discount','items'].forEach(k => {
+      const el = document.getElementById('err_'+k); if (el) el.textContent='';
+    });
+    const showErr = (errs) => {
+      if (!errs) return;
+      Object.entries(errs).forEach(([k,v]) => {
+        const el = document.getElementById('err_'+k);
+        if (el) el.textContent = Array.isArray(v) ? v[0] : String(v);
+      });
+    };
 
-    function rowTpl(i, desc='', qty='1', price='0') {
+    const fmt = (n) => new Intl.NumberFormat('th-TH', { minimumFractionDigits:2, maximumFractionDigits:2 }).format(Number(n||0));
+
+    function rowTpl(it) {
       return `
-      <tr class="item-row">
-        <td class="px-3 py-2">
-          <input name="items[${i}][description]" value="${desc}"
-                 class="w-full rounded-xl border border-slate-300 px-3 py-2" required>
-        </td>
-        <td class="px-3 py-2 text-right">
-          <input name="items[${i}][qty]" value="${qty}" type="number" step="0.01" min="0.01"
-                 class="w-28 text-right rounded-xl border border-slate-300 px-3 py-2 qty" required>
-        </td>
-        <td class="px-3 py-2 text-right">
-          <input name="items[${i}][unit_price]" value="${price}" type="number" step="0.01" min="0"
-                 class="w-36 text-right rounded-xl border border-slate-300 px-3 py-2 price" required>
-        </td>
-        <td class="px-3 py-2 text-right font-semibold amount">0.00</td>
-        <td class="px-3 py-2 text-right">
-          <button type="button"
-            class="inline-flex items-center justify-center rounded-xl bg-rose-600 text-white px-4 py-2 text-sm font-semibold hover:bg-rose-500 transition del">
-            ลบ
-          </button>
-        </td>
-      </tr>`;
+        <tr>
+          <td class="px-4 py-3"><input class="desc w-full rounded-xl border border-slate-200 px-3 py-2" value="${it.description||''}" placeholder="เช่น ค่าเช่าเดือน..." /></td>
+          <td class="px-4 py-3 text-right"><input type="number" step="0.01" min="0.01" class="qty w-24 rounded-xl border border-slate-200 px-3 py-2 text-right" value="${it.qty||1}" /></td>
+          <td class="px-4 py-3 text-right"><input type="number" step="0.01" min="0" class="price w-28 rounded-xl border border-slate-200 px-3 py-2 text-right" value="${it.unit_price||0}" /></td>
+          <td class="px-4 py-3 text-right font-semibold"><span class="sum">${fmt((it.qty||0)*(it.unit_price||0))}</span></td>
+          <td class="px-4 py-3 text-right"><button type="button" class="btnDel rounded-xl bg-slate-900 px-3 py-2 text-white text-sm font-semibold hover:bg-black">ลบ</button></td>
+        </tr>
+      `;
     }
 
-    function recalc(tr) {
-      const qty = parseFloat(tr.querySelector('.qty')?.value || 0);
-      const price = parseFloat(tr.querySelector('.price')?.value || 0);
-      tr.querySelector('.amount').innerText = (qty * price).toFixed(2);
-    }
-
-    function bindRow(tr) {
-      tr.querySelector('.qty').addEventListener('input', () => recalc(tr));
-      tr.querySelector('.price').addEventListener('input', () => recalc(tr));
-      tr.querySelector('.del').addEventListener('click', () => tr.remove());
-      recalc(tr);
-    }
-
-    let idx = 0;
-    function addRow(desc='', qty='1', price='0') {
-      const tmp = document.createElement('tbody');
-      tmp.innerHTML = rowTpl(idx++, desc, qty, price);
-      const tr = tmp.querySelector('tr');
-      body.appendChild(tr);
-      bindRow(tr);
-    }
-
-    addBtn.addEventListener('click', () => addRow());
-    addRow();
-
-    // ===== ✅ Auto room by tenant =====
-    const tenantSelect = document.getElementById('tenantSelect');
-    const roomDisplay  = document.getElementById('roomDisplay');
-    const roomId       = document.getElementById('roomId');
-    const roomHint     = document.getElementById('roomHint');
-
-    async function loadRoom(tenantId) {
-      roomDisplay.value = '';
-      roomId.value = '';
-
-      if (!tenantId) {
-        roomDisplay.value = '';
-        roomHint.innerText = 'ระบบจะดึงห้องจาก “ห้องที่ผู้เช่าพักอยู่ตอนนี้”';
-        return;
-      }
-
-      try {
-        const res = await fetch(`/admin/tenants/${tenantId}/current-room`, {
-          headers: { 'Accept': 'application/json' }
+    function bindItemEvents() {
+      document.querySelectorAll('#items tr').forEach(tr => {
+        const calc = () => {
+          const qty = Number(tr.querySelector('.qty').value||0);
+          const price = Number(tr.querySelector('.price').value||0);
+          tr.querySelector('.sum').textContent = fmt(qty*price);
+        };
+        tr.querySelector('.qty').addEventListener('input', calc);
+        tr.querySelector('.price').addEventListener('input', calc);
+        tr.querySelector('.btnDel').addEventListener('click', () => {
+          tr.remove();
         });
-
-        const data = await res.json();
-
-        if (data.room_id) {
-          roomDisplay.value = data.room_code;
-          roomId.value = data.room_id;
-          roomHint.innerText = 'ดึงห้องอัตโนมัติเรียบร้อย';
-        } else {
-          roomDisplay.value = 'ยังไม่ได้เข้าพัก';
-          roomHint.innerText = 'ผู้เช่านี้ยังไม่มีห้องปัจจุบัน';
-        }
-      } catch (e) {
-        roomDisplay.value = 'โหลดห้องไม่สำเร็จ';
-        roomHint.innerText = 'เช็ค route / controller current-room';
-      }
+      });
     }
 
-    tenantSelect.addEventListener('change', () => loadRoom(tenantSelect.value));
+    async function loadMeta() {
+      const res = await window.api.get('/admin/invoices/meta');
+      const tenantSel = document.getElementById('tenant_id');
+      tenantSel.innerHTML = '<option value="">-- เลือกผู้เช่า --</option>';
+      res.data.tenants.forEach(t => {
+        const name = t.user?.name || t.user?.email;
+        const o = document.createElement('option');
+        o.value = t.id; o.textContent = name;
+        tenantSel.appendChild(o);
+      });
 
-    // ✅ ถ้ามี old tenant_id (validate กลับมา) ให้โหลดห้องอัตโนมัติด้วย
-    const oldTenantId = @js(old('tenant_id'));
-    if (oldTenantId) loadRoom(oldTenantId);
+      const roomSel = document.getElementById('room_id');
+      roomSel.innerHTML = '<option value="">-- ไม่ระบุห้อง --</option>';
+      res.data.rooms.forEach(r => {
+        const o = document.createElement('option');
+        o.value = r.id; o.textContent = r.code;
+        roomSel.appendChild(o);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadMeta();
+      // default 1 item
+      document.getElementById('items').innerHTML = rowTpl({ description:'', qty:1, unit_price:0 });
+      bindItemEvents();
+
+      document.getElementById('btnAdd').addEventListener('click', () => {
+        document.getElementById('items').insertAdjacentHTML('beforeend', rowTpl({ description:'', qty:1, unit_price:0 }));
+        bindItemEvents();
+      });
+
+      document.getElementById('frm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearErr();
+
+        const items = Array.from(document.querySelectorAll('#items tr')).map(tr => ({
+          description: tr.querySelector('.desc').value.trim(),
+          qty: Number(tr.querySelector('.qty').value),
+          unit_price: Number(tr.querySelector('.price').value),
+        }));
+
+        const payload = {
+          tenant_id: Number(document.getElementById('tenant_id').value),
+          room_id: document.getElementById('room_id').value ? Number(document.getElementById('room_id').value) : null,
+          type: document.getElementById('type').value,
+          period_month: Number(document.getElementById('period_month').value),
+          period_year: Number(document.getElementById('period_year').value),
+          due_date: document.getElementById('due_date').value || null,
+          discount: Number(document.getElementById('discount').value||0),
+          items,
+        };
+
+        try {
+          await window.api.post('/admin/invoices', payload);
+          location.href = '{{ route('admin.invoices.index') }}';
+        } catch (err) {
+          const d = err?.response?.data;
+          showErr(d?.errors);
+          alert(d?.message || 'บันทึกไม่สำเร็จ');
+        }
+      });
+    });
   </script>
 </x-admin-layout>

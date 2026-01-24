@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -62,6 +63,11 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // ลบ Sanctum token ที่ใช้กับ Blade API (ถ้ามี)
+        if ($tokenId = $request->session()->get('api_token_id')) {
+            PersonalAccessToken::where('id', $tokenId)->delete();
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

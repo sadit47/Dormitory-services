@@ -14,16 +14,7 @@ class AdminProfileController extends Controller
 
     public function update(Request $request)
     {
-        $data = $request->validate([
-            'name'  => ['required', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
-        ]);
-
-        $request->user()->update([
-            'name'  => $data['name'],
-            'phone' => $data['phone'] ?? null,
-        ]);
-
-        return back()->with('success', 'อัปเดตข้อมูลเรียบร้อย');
+        // Data updates are via REST API
+        abort(404);
     }
 }

@@ -9,10 +9,18 @@ class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, string $role)
     {
-        $user = $request->user();
-        if (!$user || $user->role !== $role) {
-            abort(403);
+    $user = $request->user();
+
+    if (!$user || $user->role !== $role) {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Forbidden',
+            ], 403);
         }
-        return $next($request);
+        abort(403);
     }
+
+    return $next($request);
+    }
+
 }

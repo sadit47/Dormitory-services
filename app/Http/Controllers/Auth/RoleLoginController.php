@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class RoleLoginController extends Controller
 {
@@ -53,6 +54,21 @@ class RoleLoginController extends Controller
         }
 
         $request->session()->regenerate();
+
+        // ✅ สร้าง Sanctum token สำหรับให้ Blade (JS) เรียก REST API แบบ Bearer
+        // เก็บ token id ไว้เพื่อ delete ตอน logout
+        $user = $request->user();
+        if ($user) {
+            // ลบ token เดิมของ blade (ถ้ามี)
+            if ($tokenId = $request->session()->get('api_token_id')) {
+                PersonalAccessToken::where('id', $tokenId)->delete();
+            }
+
+            $newToken = $user->createToken('blade');
+            $request->session()->put('api_token', $newToken->plainTextToken);
+            $request->session()->put('api_token_id', $newToken->accessToken->id);
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 }

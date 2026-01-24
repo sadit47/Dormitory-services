@@ -75,24 +75,24 @@ Route::middleware(['auth'])->group(function () {
 
             Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
 
-            Route::resource('rooms', RoomController::class)->except(['show']);
-            Route::get('rooms/{room}/tenant', [RoomController::class, 'tenant'])->name('rooms.tenant');
-
-            Route::resource('tenants', TenantController::class);
-            Route::get('tenants/{tenant}/current-room',[TenantController::class, 'currentRoom'])->name('tenants.current-room');
-
-            Route::resource('invoices', AdminInvoiceController::class)->except(['show']);
+            /*
+             |--------------------------------------------------------------
+             | ✅ Admin UI (Blade) routes
+             | Blade pages will fetch/submit data via REST API only.
+             |--------------------------------------------------------------
+             */
+            Route::resource('rooms', RoomController::class)->only(['index','create','edit']);
+            Route::resource('tenants', TenantController::class)->only(['index','create','edit']);
+            Route::resource('invoices', AdminInvoiceController::class)->only(['index','create','edit']);
 
             Route::get('repairs', [AdminRepairController::class, 'index'])->name('repairs.index');
-            Route::patch('repairs/{repair}/status', [AdminRepairController::class, 'updateStatus'])->name('repairs.status');
-            Route::delete('repairs/{repair}', [AdminRepairController::class, 'destroy'])->name('repairs.destroy');
+            // Repairs actions now via API
 
             Route::get('invoices/{invoice}/pdf', [AdminInvoiceController::class, 'pdfInvoice'])->name('invoices.pdf');
             Route::get('invoices/{invoice}/receipt-pdf', [AdminInvoiceController::class, 'pdfReceipt'])->name('receipts.pdf');
 
             Route::get('payments/pending', [PaymentReviewController::class, 'pending'])->name('payments.pending');
-            Route::post('payments/{payment}/approve', [PaymentReviewController::class, 'approve'])->name('payments.approve');
-            Route::post('payments/{payment}/reject', [PaymentReviewController::class, 'reject'])->name('payments.reject');
+            // Payment approve/reject now via API
         });
 
     /*

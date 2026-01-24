@@ -1,152 +1,109 @@
-{{-- resources/views/admin/tenants/index.blade.php --}}
 <x-admin-layout title="ผู้เช่า">
-  <x-slot name="actions">
-    <a href="{{ \Illuminate\Support\Facades\Route::has('admin.tenants.create') ? route('admin.tenants.create') : route('tenants.create') }}"
-       class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800">
-      + เพิ่มผู้เช่า
-    </a>
-  </x-slot>
-
-  {{-- Search --}}
-  <div class="card-strong p-5 mb-4">
-    <form class="flex flex-col sm:flex-row gap-3" method="GET">
-      <input name="q" value="{{ $q }}"
-             class="w-full rounded-xl border border-slate-300 px-4 py-2"
-             placeholder="ค้นหา: ชื่อ / อีเมล / เบอร์ / บัตรประชาชน">
-      <button class="px-5 py-2 rounded-xl bg-slate-900 text-white font-semibold">
-        ค้นหา
-      </button>
-    </form>
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <div class="flex gap-2">
+        <input id="q" placeholder="ค้นหาชื่อ / อีเมล / บัตรประชาชน" class="w-full sm:w-96 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        <button id="btnSearch" class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black">ค้นหา</button>
+      </div>
+      <a href="{{ route('admin.tenants.create') }}" class="inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-5 py-4 text-sm font-semibold text-white hover:bg-indigo-500 shadow-sm">+ เพิ่มผู้เช่า</a>
+    </div>
   </div>
 
-  {{-- Table --}}
-  <div class="card-strong overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="min-w-full text-sm">
-        <thead class="bg-slate-50 text-slate-600">
-          <tr>
-            <th class="text-left px-5 py-3">ชื่อ</th>
-            <th class="text-left px-5 py-3">ห้อง</th>
-            <th class="text-left px-5 py-3">อีเมล</th>
-            <th class="text-left px-5 py-3">รหัสผ่าน</th>
-            <th class="text-left px-5 py-3">โทร</th>
-            <th class="text-left px-5 py-3">Citizen ID</th>
-            <th class="text-right px-5 py-3">จัดการ</th>
-          </tr>
-        </thead>
-
-        <tbody class="divide-y">
-          @forelse($tenants as $t)
-            @php
-              // ===== Room =====
-              $roomCode = $t->currentRoom?->code ?? '-';
-
-              // ===== Password (decrypt safely) =====
-              $plainPw = null;
-              try {
-                  if (!empty($t->user?->admin_password_enc)) {
-                      $plainPw = \Illuminate\Support\Facades\Crypt::decryptString($t->user->admin_password_enc);
-                  }
-              } catch (\Throwable $e) {
-                  $plainPw = null;
-              }
-
-              // ===== Copy text =====
-              $copyText = "ห้อง: {$roomCode}\n"
-                        . "อีเมล: " . ($t->user->email ?? '-') . "\n"
-                        . "รหัสผ่าน: " . ($plainPw ?? '-');
-
-              // ===== Routes (รองรับทั้ง admin.* และไม่มี admin.) =====
-              $editRoute = \Illuminate\Support\Facades\Route::has('admin.tenants.edit')
-                  ? route('admin.tenants.edit', $t)
-                  : route('tenants.edit', $t);
-
-              $destroyRoute = \Illuminate\Support\Facades\Route::has('admin.tenants.destroy')
-                  ? route('admin.tenants.destroy', $t)
-                  : route('tenants.destroy', $t);
-            @endphp
-
-            <tr class="hover:bg-slate-50">
-              <td class="px-5 py-3 font-semibold text-slate-900">
-                {{ $t->user->name ?? '-' }}
-              </td>
-
-              <td class="px-5 py-3">
-                <span class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-900">
-                  {{ $roomCode }}
-                </span>
-              </td>
-
-              <td class="px-5 py-3">{{ $t->user->email ?? '-' }}</td>
-
-              <td class="px-5 py-3">
-                @if($plainPw)
-                  <span class="font-mono font-semibold text-slate-900">{{ $plainPw }}</span>
-                @else
-                  <span class="text-slate-400">-</span>
-                @endif
-              </td>
-
-              <td class="px-5 py-3">{{ $t->user->phone ?? '-' }}</td>
-              <td class="px-5 py-3">{{ $t->citizen_id ?? '-' }}</td>
-
-              <td class="px-5 py-3 text-right whitespace-nowrap min-w-[320px]">
-  <div class="inline-flex gap-2 justify-end items-center">
-
-    {{-- Copy --}}
-    <button type="button"
-            class="inline-flex items-center justify-center
-                   rounded-xl bg-slate-900 text-white font-semibold
-                   px-5 py-2.5 text-sm
-                   hover:bg-slate-800 transition"
-            onclick="navigator.clipboard.writeText(@js($copyText));
-                     const b=this; b.innerText='คัดลอกแล้ว';
-                     setTimeout(()=>b.innerText='คัดลอก',1200);">
-      คัดลอก
-    </button>
-
-    {{-- Edit --}}
-    <a href="{{ $editRoute }}"
-       class="inline-flex items-center justify-center
-              rounded-xl bg-indigo-600 text-white font-semibold
-              px-5 py-2.5 text-sm
-              hover:bg-indigo-500 transition">
-      แก้ไข
-    </a>
-
-    {{-- Delete --}}
-    <form method="POST"
-          action="{{ $destroyRoute }}"
-          class="inline-flex"
-          onsubmit="return confirm('ลบผู้เช่านี้?')">
-      @csrf
-      @method('DELETE')
-      <button type="submit"
-              class="inline-flex items-center justify-center
-                     rounded-xl bg-red-600 text-white font-semibold
-                     px-5 py-2.5 text-sm
-                     hover:bg-red-500 transition">
-        ลบ
-      </button>
-    </form>
-
+  <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+    <table class="min-w-full text-sm">
+      <thead class="bg-slate-50 text-slate-600">
+        <tr>
+          <th class="px-4 py-3 text-left font-semibold">ชื่อ</th>
+          <th class="px-4 py-3 text-left font-semibold">อีเมล</th>
+          <th class="px-4 py-3 text-left font-semibold">เบอร์</th>
+          <th class="px-4 py-3 text-left font-semibold">ห้องปัจจุบัน</th>
+          <th class="px-4 py-3 text-right font-semibold">จัดการ</th>
+        </tr>
+      </thead>
+      <tbody id="rows" class="divide-y divide-slate-100"></tbody>
+    </table>
   </div>
-</td>
-            </tr>
-          @empty
+
+  <div class="mt-6 flex items-center justify-between" id="pager"></div>
+
+  <script>
+    const qs = (k) => new URLSearchParams(location.search).get(k) || '';
+    const setQs = (params) => {
+      const u = new URL(location.href);
+      Object.entries(params).forEach(([k,v]) => {
+        if (v === '' || v === null || v === undefined) u.searchParams.delete(k);
+        else u.searchParams.set(k, v);
+      });
+      history.replaceState({}, '', u.toString());
+    };
+
+    async function fetchTenants() {
+      const q = document.getElementById('q').value.trim();
+      const page = Number(qs('page') || 1);
+      setQs({ q, page });
+
+      const res = await window.api.get('/admin/tenants', { params: { q, per_page: 10, page }});
+      const data = res.data;
+      const tbody = document.getElementById('rows');
+
+      if (!data.data?.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-6 text-slate-700">ไม่พบข้อมูลผู้เช่า</td></tr>`;
+      } else {
+        tbody.innerHTML = data.data.map(t => {
+          const u = t.user || {};
+          const room = t.current_room?.code || '-';
+          return `
             <tr>
-              <td colspan="7" class="px-5 py-8 text-center text-slate-500">
-                ไม่พบข้อมูลผู้เช่า
+              <td class="px-4 py-3 font-semibold text-slate-900">${u.name || '-'}</td>
+              <td class="px-4 py-3 text-slate-700">${u.email || '-'}</td>
+              <td class="px-4 py-3 text-slate-700">${u.phone || '-'}</td>
+              <td class="px-4 py-3 text-slate-700">${room}</td>
+              <td class="px-4 py-3 text-right">
+                <a href="/admin/tenants/${t.id}/edit" class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50">แก้ไข</a>
+                <button data-del="${t.id}" class="ml-2 inline-flex items-center rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-black">ลบ</button>
               </td>
             </tr>
-          @endforelse
-        </tbody>
+          `;
+        }).join('');
 
-      </table>
-    </div>
+        tbody.querySelectorAll('button[data-del]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.del;
+            if (!confirm('ยืนยันลบผู้เช่านี้?')) return;
+            try {
+              await window.api.delete(`/admin/tenants/${id}`);
+              await fetchTenants();
+            } catch (e) {
+              alert(e?.response?.data?.message || 'ลบไม่สำเร็จ');
+            }
+          });
+        });
+      }
 
-    <div class="p-4">
-      {{ $tenants->links() }}
-    </div>
-  </div>
+      const pager = document.getElementById('pager');
+      pager.innerHTML = `
+        <div class="text-sm text-slate-600">หน้า ${data.current_page} / ${data.last_page}</div>
+        <div class="flex gap-2">
+          <button id="prev" class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50" ${data.current_page<=1?'disabled style="opacity:.5"':''}>ก่อนหน้า</button>
+          <button id="next" class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50" ${data.current_page>=data.last_page?'disabled style="opacity:.5"':''}>ถัดไป</button>
+        </div>
+      `;
+      pager.querySelector('#prev')?.addEventListener('click', () => {
+        if (data.current_page<=1) return;
+        setQs({ page: data.current_page-1 });
+        fetchTenants();
+      });
+      pager.querySelector('#next')?.addEventListener('click', () => {
+        if (data.current_page>=data.last_page) return;
+        setQs({ page: data.current_page+1 });
+        fetchTenants();
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('q').value = qs('q');
+      document.getElementById('btnSearch').addEventListener('click', () => { setQs({ page: 1 }); fetchTenants(); });
+      fetchTenants();
+    });
+  </script>
 </x-admin-layout>

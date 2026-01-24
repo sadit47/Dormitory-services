@@ -9,15 +9,21 @@ class EnsureTenantProfile
 {
     public function handle(Request $request, Closure $next)
     {
-        $user = $request->user();
+    $user = $request->user();
 
-        // บังคับเฉพาะ role tenant เท่านั้น
-        if ($user && $user->role === 'tenant' && !$user->tenant) {
-            // เด้งไปหน้าโปรไฟล์ (ของ Breeze มีอยู่แล้ว)
-            return redirect()->route('tenant.profile.create')
-                ->with('success', 'กรุณากรอกข้อมูลผู้เช่าก่อน เพื่อใช้งานระบบ');
+    if ($user && $user->role === 'tenant' && !$user->tenant) {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Tenant profile is required.',
+                'code' => 'TENANT_PROFILE_REQUIRED',
+            ], 409);
         }
 
-        return $next($request);
+        return redirect()->route('tenant.profile.create')
+            ->with('success', 'กรุณากรอกข้อมูลผู้เช่าก่อน เพื่อใช้งานระบบ');
     }
+
+    return $next($request);
+    }
+
 }
