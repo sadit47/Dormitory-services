@@ -17,12 +17,9 @@ use App\Http\Controllers\Api\V1\Tenant\DashboardController as TenantDashboardCon
 use App\Http\Controllers\Api\V1\Tenant\ProfileController as TenantProfileController;
 
 use App\Http\Controllers\Api\V1\FileController;
-use App\Http\Controllers\Api\V1\HealthController;
 
 Route::prefix('v1')->group(function () {
-    Route::get('/health', HealthController::class); {
-        return response()->json(['ok' => true, 'message' => 'OK']);
-    };
+
     // Auth
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::middleware('auth:sanctum')->group(function () {
