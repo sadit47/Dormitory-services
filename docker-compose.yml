@@ -6,6 +6,7 @@ services:
     container_name: room_app
     volumes:
       - ./backend:/var/www/html
+      - ./docker/php/conf.d/99-opcache-comments.ini:/usr/local/etc/php/conf.d/99-opcache-comments.ini
     depends_on:
       - mysql
 

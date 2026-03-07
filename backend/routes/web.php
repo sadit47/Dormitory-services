@@ -21,6 +21,11 @@ use App\Http\Controllers\Tenant\TenantProfileController;
 
 use App\Http\Controllers\FileController;
 
+use L5Swagger\Http\Controllers\SwaggerController;
+
+Route::get('/docs/api-docs.json', [SwaggerController::class, 'docs'])
+    ->name('swagger.docs.alias');
+
 /*
 |--------------------------------------------------------------------------
 | Public

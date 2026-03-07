@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { tenantInvoicesApi, type TenantInvoiceDetail } from "./services/tenantInvoicesApi";
+import {
+  tenantInvoicesApi,
+  type TenantInvoiceDetail,
+} from "./services/tenantInvoicesApi";
 
 function money(n: any) {
   return Number(n ?? 0).toLocaleString();
 }
 
-// ✅ แสดงข้อความสถานะภาษาไทย
 function displayStatus(inv: any) {
   if (inv.payment_status === "waiting") return "กำลังดำเนินการ";
   if (inv.status === "paid") return "ชำระแล้ว";
@@ -14,12 +16,22 @@ function displayStatus(inv: any) {
   return inv.status ?? "-";
 }
 
-// ✅ สี badge
 function statusPill(inv: any) {
-  if (inv.payment_status === "waiting") return "bg-amber-100 text-amber-800";
-  if (inv.status === "paid") return "bg-emerald-100 text-emerald-700";
-  if (inv.status === "unpaid" || inv.status === "partial") return "bg-rose-100 text-rose-700";
-  return "bg-gray-100 text-gray-700";
+  if (inv.payment_status === "waiting") {
+    return "bg-amber-50 text-amber-700 ring-1 ring-amber-200";
+  }
+  if (inv.status === "paid") {
+    return "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200";
+  }
+  if (inv.status === "unpaid" || inv.status === "partial") {
+    return "bg-rose-50 text-rose-700 ring-1 ring-rose-200";
+  }
+  return "bg-slate-100 text-slate-600 ring-1 ring-slate-200";
+}
+
+function getRoomLabel(room: any) {
+  if (!room) return "-";
+  return room.room_no ?? room.name ?? room.code ?? room.id ?? "-";
 }
 
 export default function TenantInvoiceDetailPage() {
@@ -32,6 +44,7 @@ export default function TenantInvoiceDetailPage() {
 
   useEffect(() => {
     if (!invoiceId) return;
+
     setLoading(true);
     tenantInvoicesApi
       .show(invoiceId)
@@ -54,70 +67,108 @@ export default function TenantInvoiceDetailPage() {
     const blob = new Blob([res.data], { type: "application/pdf" });
     const url = window.URL.createObjectURL(blob);
 
-    // เปิดแท็บใหม่เพื่อดู PDF
     window.open(url, "_blank", "noopener,noreferrer");
-
-    // กัน memory leak (หน่วงนิดให้ browser เปิดก่อน)
     setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
   };
 
-
-  if (loading) return <div className="p-4 text-gray-500">กำลังโหลด...</div>;
-  if (!data) return <div className="p-4 text-gray-500">ไม่พบข้อมูล</div>;
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <button onClick={() => nav(-1)} className="px-3 py-2 rounded-xl border bg-white">
-          ← กลับ
-        </button>
-
-        <div className="flex gap-2 flex-wrap">
-          <button onClick={openPdf} className="px-4 py-2 rounded-xl border bg-white">
-            👁️ เปิดดู PDF
-          </button>
-
-          {(data.status === "unpaid" || data.status === "partial") && (
-            <button
-              onClick={() => nav(`/tenant/payments/upload?invoice_id=${data.id}`)}
-              className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-medium"
-            >
-              💳 อัปโหลดสลิปชำระเงิน
-            </button>
-          )}
+  if (loading) {
+    return (
+      <div className="rounded-[28px] border border-white/70 bg-white/90 p-6 shadow-[0_12px_36px_rgba(15,23,42,0.06)]">
+        <div className="rounded-2xl bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
+          กำลังโหลด...
         </div>
       </div>
+    );
+  }
 
-      {/* Summary */}
-      <div className="bg-white border rounded-2xl shadow-sm p-5">
-        <div className="flex items-start justify-between gap-3">
+  if (!data) {
+    return (
+      <div className="rounded-[28px] border border-white/70 bg-white/90 p-6 shadow-[0_12px_36px_rgba(15,23,42,0.06)]">
+        <div className="rounded-2xl bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
+          ไม่พบข้อมูล
+        </div>
+      </div>
+    );
+  }
+
+  const canUploadSlip =
+    (data.status === "unpaid" || data.status === "partial") &&
+    data.payment_status !== "waiting";
+
+  return (
+    <div className="space-y-5">
+      {/* Top actions */}
+      <section className="rounded-[28px] border border-white/70 bg-white/85 p-5 shadow-[0_14px_36px_rgba(15,23,42,0.06)] backdrop-blur-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <div className="text-lg font-semibold">
-              {data.invoice_no}
-            </div>
-            <div className="text-sm text-gray-500">
-              งวด {data.period_month}/{data.period_year} • {data.type}
-              {data.due_date ? ` • กำหนดชำระ ${data.due_date}` : ""}
-            </div>
-            {data.room && (
-              <div className="text-sm text-gray-500 mt-1">
-                ห้อง:{" "}
-                {data.room.room_no ??
-                  data.room.name ??
-                  data.room.code ??
-                  data.room.id}
+            <button
+              onClick={() => nav(-1)}
+              className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-[0_6px_16px_rgba(15,23,42,0.04)] transition hover:bg-slate-50"
+            >
+              ← กลับ
+            </button>
+
+            <div className="mt-4">
+              <div className="text-2xl font-bold tracking-tight text-slate-800">
+                รายละเอียดใบแจ้งหนี้
               </div>
-            )}
+              <div className="mt-1 text-sm text-slate-500">
+                ตรวจสอบข้อมูลรายการ ยอดรวม และสถานะการชำระเงิน
+              </div>
+            </div>
           </div>
 
-          <div className="text-right">
-            <div className="text-xl font-semibold">
-              {money(data.total)} บาท
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={openPdf}
+              className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-[0_8px_20px_rgba(15,23,42,0.04)] transition hover:bg-slate-50"
+            >
+              👁️ เปิดดู PDF
+            </button>
+
+            {canUploadSlip && (
+              <button
+                onClick={() => nav(`/tenant/payments/upload?invoice_id=${data.id}`)}
+                className="rounded-2xl bg-linear-to-r from-indigo-600 to-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-[0_12px_26px_rgba(59,130,246,0.22)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(59,130,246,0.28)]"
+              >
+                💳 อัปโหลดสลิปชำระเงิน
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Summary hero */}
+      <section className="relative overflow-hidden rounded-[28px] border border-white/40 bg-linear-to-r from-indigo-500 via-blue-500 to-cyan-500 p-6 text-white shadow-[0_18px_50px_rgba(59,130,246,0.22)]">
+        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <div className="text-sm font-medium text-white/85">เลขที่ใบแจ้งหนี้</div>
+            <div className="mt-2 text-2xl font-bold tracking-tight">
+              {data.invoice_no}
             </div>
 
-            {/* ✅ แสดงสถานะภาษาไทย */}
+            <div className="mt-4 flex flex-wrap gap-2 text-sm">
+              <span className="rounded-full bg-white/15 px-3 py-1 ring-1 ring-white/20 backdrop-blur-sm">
+                งวด {data.period_month}/{data.period_year}
+              </span>
+              <span className="rounded-full bg-white/15 px-3 py-1 ring-1 ring-white/20 backdrop-blur-sm">
+                ห้อง {getRoomLabel(data.room)}
+              </span>
+              {data.due_date && (
+                <span className="rounded-full bg-white/15 px-3 py-1 ring-1 ring-white/20 backdrop-blur-sm">
+                  กำหนดชำระ {data.due_date}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="text-left lg:text-right">
+            <div className="text-sm font-medium text-white/85">ยอดรวมทั้งหมด</div>
+            <div className="mt-2 text-3xl font-bold tracking-tight">
+              {money(data.total)} บาท
+            </div>
             <div
-              className={`text-xs mt-2 px-2 py-1 rounded-full inline-block ${statusPill(
+              className={`mt-3 inline-flex rounded-full px-3 py-1.5 text-xs font-medium ${statusPill(
                 data
               )}`}
             >
@@ -125,64 +176,135 @@ export default function TenantInvoiceDetailPage() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Items */}
-      <div className="bg-white border rounded-2xl shadow-sm p-5">
-        <div className="font-semibold mb-3">รายการ</div>
+        <div className="absolute -right-16 -top-14 h-52 w-52 rounded-full bg-white/10 blur-sm" />
+        <div className="absolute -bottom-20 -right-4 h-64 w-64 rounded-full bg-cyan-300/20 blur-md" />
+      </section>
 
-        {data.items?.length ? (
-          <div className="divide-y">
-            {data.items.map((it) => {
-              const lineTotal =
-                Number(it.qty ?? 0) *
-                Number(it.unit_price ?? 0);
-              return (
-                <div
-                  key={it.id}
-                  className="py-3 flex items-center justify-between gap-3"
-                >
-                  <div>
-                    <div className="font-medium">
-                      {it.description}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {it.qty} × {money(it.unit_price)} บาท
+      {/* Content grid */}
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
+        {/* Items */}
+        <section className="xl:col-span-2 rounded-[28px] border border-white/70 bg-white/85 p-5 shadow-[0_14px_36px_rgba(15,23,42,0.06)] backdrop-blur-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <div className="text-lg font-semibold text-slate-800">รายการค่าใช้จ่าย</div>
+              <div className="mt-1 text-sm text-slate-500">
+                รายการทั้งหมดภายในใบแจ้งหนี้นี้
+              </div>
+            </div>
+
+            <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+              {data.items?.length ?? 0} รายการ
+            </div>
+          </div>
+
+          {data.items?.length ? (
+            <div className="space-y-3">
+              {data.items.map((it) => {
+                const lineTotal =
+                  Number(it.qty ?? 0) * Number(it.unit_price ?? 0);
+
+                return (
+                  <div
+                    key={it.id}
+                    className="rounded-2xl border border-slate-200/80 bg-linear-to-r from-white to-slate-50/70 p-4 shadow-[0_8px_20px_rgba(15,23,42,0.04)]"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-slate-800">
+                          {it.description}
+                        </div>
+                        <div className="mt-1 text-sm text-slate-500">
+                          จำนวน {it.qty} × {money(it.unit_price)} บาท
+                        </div>
+                      </div>
+
+                      <div className="text-left sm:text-right">
+                        <div className="text-lg font-bold text-slate-800">
+                          {money(lineTotal)} บาท
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="font-semibold">
-                    {money(lineTotal)} บาท
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="text-sm text-gray-500">
-            ไม่มีรายการ
-          </div>
-        )}
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
+              ไม่มีรายการ
+            </div>
+          )}
+        </section>
 
-        {/* Totals */}
-        <div className="mt-4 border-t pt-4 space-y-1 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-600">
-              รวมย่อย (คำนวณจากรายการ)
-            </span>
-            <span className="font-medium">
-              {money(subtotal)} บาท
-            </span>
+        {/* Summary / totals */}
+        <section className="rounded-[28px] border border-white/70 bg-white/85 p-5 shadow-[0_14px_36px_rgba(15,23,42,0.06)] backdrop-blur-sm">
+          <div className="text-lg font-semibold text-slate-800">สรุปยอด</div>
+          <div className="mt-1 text-sm text-slate-500">ยอดรวมและข้อมูลการชำระเงิน</div>
+
+          <div className="mt-5 space-y-3">
+            <SummaryRow label="รวมย่อยจากรายการ" value={`${money(subtotal)} บาท`} />
+            <SummaryRow label="ยอดสุทธิจากระบบ" value={`${money(data.total)} บาท`} strong />
+            <SummaryRow label="สถานะ" value={displayStatus(data)} badge={statusPill(data)} />
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">
-              ยอดสุทธิ (จากระบบ)
-            </span>
-            <span className="font-semibold">
-              {money(data.total)} บาท
-            </span>
+
+          <div className="mt-5 rounded-2xl bg-slate-50 p-4">
+            <div className="text-sm text-slate-500">ข้อมูลเพิ่มเติม</div>
+
+            <div className="mt-3 space-y-2 text-sm">
+              <InfoRow label="เลขที่ใบแจ้งหนี้" value={data.invoice_no} />
+              <InfoRow label="งวด" value={`${data.period_month}/${data.period_year}`} />
+              <InfoRow label="ห้อง" value={String(getRoomLabel(data.room))} />
+              <InfoRow label="กำหนดชำระ" value={String(data.due_date ?? "-")} />
+            </div>
           </div>
-        </div>
+
+          {canUploadSlip && (
+            <button
+              onClick={() => nav(`/tenant/payments/upload?invoice_id=${data.id}`)}
+              className="mt-5 w-full rounded-2xl bg-linear-to-r from-indigo-600 to-blue-600 px-4 py-3 font-medium text-white shadow-[0_12px_26px_rgba(59,130,246,0.22)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(59,130,246,0.28)]"
+            >
+              💳 อัปโหลดสลิปชำระเงิน
+            </button>
+          )}
+        </section>
       </div>
+    </div>
+  );
+}
+
+function SummaryRow({
+  label,
+  value,
+  strong,
+  badge,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+  badge?: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/70 bg-white p-3 shadow-[0_6px_16px_rgba(15,23,42,0.03)]">
+      <span className="text-sm text-slate-500">{label}</span>
+
+      {badge ? (
+        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${badge}`}>
+          {value}
+        </span>
+      ) : (
+        <span className={strong ? "font-bold text-slate-800" : "font-medium text-slate-700"}>
+          {value}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-slate-500">{label}</span>
+      <span className="font-medium text-slate-700">{value}</span>
     </div>
   );
 }

@@ -20,26 +20,23 @@ return [
             'paths' => [
 
                 // ให้ UI อ้าง asset แบบ full url (มักแก้ปัญหา asset หายหลังขึ้น server)
-                'use_absolute_path' => env('L5_SWAGGER_USE_ABSOLUTE_PATH', true),
+                'use_absolute_path' => true,
 
                 // ที่เก็บ swagger-ui assets
-                'swagger_ui_assets_path' => env(
-                    'L5_SWAGGER_UI_ASSETS_PATH',
-                    'vendor/swagger-api/swagger-ui/dist/'
-                ),
+                'swagger_ui_assets_path' => 'vendor/swagger-api/swagger-ui/dist/',
 
                 // ชื่อไฟล์ output
                 'docs_json' => 'api-docs.json',
                 'docs_yaml' => 'api-docs.yaml',
 
+
                 // เลือกใช้ json/yaml ในหน้า UI
-                'format_to_use_for_docs' => env('L5_FORMAT_TO_USE_FOR_DOCS', 'json'),
+                'format_to_use_for_docs' => 'json',
 
                 // โฟลเดอร์ที่ให้สแกน annotation (สำคัญสุด)
                 'annotations' => [
-                    
                     base_path('app/Swagger'),
-                    
+                    base_path('app/Http/Controllers'),
                 ],
             ],
         ],
@@ -89,7 +86,7 @@ return [
                 // new \App\SwaggerProcessors\SchemaQueryParameter(),
             ],
 
-            'pattern' => null,
+            'pattern' => '*.php',
 
             // exclude แบบใหม่ (ทับ paths.excludes)
             'exclude' => [],
@@ -103,29 +100,29 @@ return [
         'securityDefinitions' => [
             'securitySchemes' => [
                 // ถ้าใช้ Bearer token (Sanctum/JWT) ให้เปิดอันนี้ได้
-                /*
+
                 'bearerAuth' => [
-                    'type' => 'http',
-                    'scheme' => 'bearer',
-                    'bearerFormat' => 'JWT',
-                    'description' => 'Enter token: Bearer <token>',
-                ],
-                */
+                'type' => 'http',
+                'scheme' => 'bearer',
+                'bearerFormat' => 'Sanctum',
+                'description' => 'Paste token only (Swagger will send: Authorization: Bearer <token>)',
+              ],
+                
             ],
             'security' => [
                 // ตัวอย่างการบังคับใช้ security ทั้งระบบ
-                /*
+                
                 [
                     'bearerAuth' => [],
                 ],
-                */
+                
             ],
         ],
 
         // dev: true เพื่อให้ refresh แล้ว regen ทุกครั้ง / prod: false แนะนำ
         'generate_always' => env('L5_SWAGGER_GENERATE_ALWAYS', false),
 
-        'generate_yaml_copy' => env('L5_SWAGGER_GENERATE_YAML_COPY', false),
+        'generate_yaml_copy' => false,
 
         'proxy' => false,
 
@@ -143,7 +140,8 @@ return [
             ],
 
             'authorization' => [
-                'persist_authorization' => env('L5_SWAGGER_UI_PERSIST_AUTHORIZATION', false),
+                // ✅ แนะนำให้ true เพื่อ refresh แล้วยังจำ token
+                'persist_authorization' => true,
 
                 'oauth2' => [
                     'use_pkce_with_authorization_code_grant' => false,

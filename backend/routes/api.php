@@ -16,9 +16,12 @@ use App\Http\Controllers\Api\V1\Tenant\PaymentController as TenantPaymentControl
 use App\Http\Controllers\Api\V1\Tenant\DashboardController as TenantDashboardController;
 use App\Http\Controllers\Api\V1\Tenant\ProfileController as TenantProfileController;
 
+use App\Http\Controllers\Api\V1\HealthController;
+
 use App\Http\Controllers\Api\V1\FileController;
 
 Route::prefix('v1')->group(function () {
+    Route::get('/health', [HealthController::class, 'health']);
 
     // Auth
     Route::post('/auth/login', [AuthController::class, 'login']);

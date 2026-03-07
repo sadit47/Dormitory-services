@@ -4,27 +4,34 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
-use OpenApi\Annotations as OA;
+use OpenApi\Attributes as OA;
 
-class HealthController extends Controller
+final class HealthController extends Controller
 {
-    /**
-     * @OA\Get(
-     *   path="/health",
-     *   tags={"System"},
-     *   summary="Health check",
-     *   @OA\Response(
-     *     response=200,
-     *     description="OK",
-     *     @OA\JsonContent(
-     *       @OA\Property(property="ok", type="boolean", example=true),
-     *       @OA\Property(property="message", type="string", example="OK")
-     *     )
-     *   )
-     * )
-     */
-    public function __invoke(): JsonResponse
+    #[OA\Get(
+        path: '/health',
+        operationId: 'healthCheck',
+        tags: ['System'],
+        summary: 'Health check',
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'OK',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'ok', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string', example: 'OK'),
+                    ],
+                    type: 'object'
+                )
+            )
+        ]
+    )]
+    public function health(): JsonResponse
     {
-        return response()->json(['ok' => true, 'message' => 'OK']);
+        return response()->json([
+            'ok' => true,
+            'message' => 'OK',
+        ]);
     }
 }

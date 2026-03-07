@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { tenantProfileApi, type TenantProfilePayload, type TenantProfileResponse } from "./services/tenantProfileApi";
+import {
+  tenantProfileApi,
+  type TenantProfilePayload,
+  type TenantProfileResponse,
+} from "./services/tenantProfileApi";
 
 function getRoomLabel(room: any) {
   if (!room) return "-";
@@ -32,6 +36,7 @@ export default function TenantProfilePage() {
 
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
+  const [okMsg, setOkMsg] = useState("");
 
   const [form, setForm] = useState<TenantProfilePayload>({
     citizen_id: "",
@@ -42,14 +47,13 @@ export default function TenantProfilePage() {
   const startDate = data?.tenant?.start_date ?? null;
   const endDate = data?.tenant?.end_date ?? null;
 
-  const canSave = useMemo(() => {
-    // บันทึกเฉพาะข้อมูลโปรไฟล์ (ไม่ยุ่งวันเริ่ม/สิ้นสุด)
-    return true;
-  }, []);
+  const canSave = useMemo(() => true, []);
 
   const load = async () => {
     setLoading(true);
     setErr("");
+    setOkMsg("");
+
     try {
       const res = await tenantProfileApi.show();
       setData(res);
@@ -75,17 +79,19 @@ export default function TenantProfilePage() {
   const save = async () => {
     setSaving(true);
     setErr("");
+    setOkMsg("");
+
     try {
-      // ✅ ไม่ส่ง start_date/end_date ไปแก้ เพื่อให้ยึดตามแอดมิน
       const payload: TenantProfilePayload = {
         citizen_id: form.citizen_id ? String(form.citizen_id) : null,
         address: form.address ? String(form.address) : null,
-        emergency_contact: form.emergency_contact ? String(form.emergency_contact) : null,
+        emergency_contact: form.emergency_contact
+          ? String(form.emergency_contact)
+          : null,
       };
 
       const res = await tenantProfileApi.update(payload);
 
-      // backend คืน { tenant, current_room } => รวมกลับเข้าหน้า
       setData((prev) =>
         prev
           ? {
@@ -95,6 +101,8 @@ export default function TenantProfilePage() {
             }
           : prev
       );
+
+      setOkMsg("บันทึกข้อมูลเรียบร้อยแล้ว");
     } catch (e: any) {
       console.error("TENANT PROFILE SAVE ERROR", e);
       setErr(e?.response?.data?.message ?? "บันทึกไม่สำเร็จ");
@@ -104,133 +112,208 @@ export default function TenantProfilePage() {
   };
 
   if (loading) {
-    return <div className="p-4 text-gray-500">กำลังโหลด...</div>;
+    return (
+      <div className="rounded-[28px] border border-white/70 bg-white/90 p-6 shadow-[0_14px_36px_rgba(15,23,42,0.06)]">
+        <div className="rounded-2xl bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
+          กำลังโหลด...
+        </div>
+      </div>
+    );
   }
 
   if (!data) {
     return (
-      <div className="bg-white border rounded-2xl p-5">
-        <div className="font-semibold text-gray-800">ไม่พบข้อมูล</div>
-        <div className="text-sm text-gray-500 mt-1">{err || "กรุณาลองออกจากระบบแล้วเข้าสู่ระบบใหม่"}</div>
+      <div className="rounded-[28px] border border-white/70 bg-white/90 p-6 shadow-[0_14px_36px_rgba(15,23,42,0.06)]">
+        <div className="font-semibold text-slate-800">ไม่พบข้อมูล</div>
+        <div className="mt-1 text-sm text-slate-500">
+          {err || "กรุณาลองออกจากระบบแล้วเข้าสู่ระบบใหม่"}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Header */}
-      <div>
-        <div className="text-xl font-semibold text-gray-900">โปรไฟล์</div>
-        <div className="text-sm text-gray-500">จัดการข้อมูลติดต่อ และดูรายละเอียดสัญญาเช่า</div>
-      </div>
+      <section className="rounded-[28px] border border-white/70 bg-white/85 p-5 shadow-[0_14px_36px_rgba(15,23,42,0.06)] backdrop-blur-sm">
+        <div>
+          <div className="text-2xl font-bold tracking-tight text-slate-800">
+            โปรไฟล์
+          </div>
+          <div className="mt-1 text-sm text-slate-500">
+            จัดการข้อมูลติดต่อ และดูรายละเอียดสัญญาเช่า
+          </div>
+        </div>
+      </section>
 
       {err && (
-        <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl p-4 text-sm font-medium">
+        <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-[0_8px_18px_rgba(244,63,94,0.06)]">
           {err}
         </div>
       )}
 
+      {okMsg && (
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 shadow-[0_8px_18px_rgba(16,185,129,0.06)]">
+          {okMsg}
+        </div>
+      )}
+
       {/* Contract / Room card */}
-      <div className="relative overflow-hidden rounded-2xl p-6 text-white shadow-lg bg-linear-to-r from-indigo-600 via-blue-600 to-sky-600">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
+      <section className="relative overflow-hidden rounded-[28px] border border-white/40 bg-linear-to-r from-indigo-500 via-blue-500 to-cyan-500 p-6 text-white shadow-[0_18px_50px_rgba(59,130,246,0.22)]">
+        <div className="relative z-10 flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div>
-            <div className="text-sm opacity-90">ห้องพักปัจจุบัน</div>
-            <div className="text-lg font-semibold text-white mt-1">{getRoomLabel(data.current_room)}</div>
+            <div className="text-sm font-medium text-white/85">ห้องพักปัจจุบัน</div>
+            <div className="mt-2 text-3xl font-bold tracking-tight">
+              {getRoomLabel(data.current_room)}
+            </div>
+            <div className="mt-2 text-sm text-white/80">
+              ข้อมูลห้องที่เช่าอยู่ในปัจจุบัน
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full sm:w-auto">
-            <div className="bg-gray-50 border rounded-2xl p-4">
-              <div className="text-xs text-gray-500 font-medium">วันเริ่มเช่า</div>
-              <div className="mt-1 font-semibold text-gray-900">{formatDateTH(startDate)}</div>
-              <div className="text-[11px] text-gray-500 mt-1">กำหนดจากแอดมิน</div>
-            </div>
-
-            <div className="bg-gray-50 border rounded-2xl p-4">
-              <div className="text-xs text-gray-500 font-medium">วันสิ้นสุดสัญญา</div>
-              <div className="mt-1 font-semibold text-gray-900">{formatDateTH(endDate)}</div>
-              <div className="text-[11px] text-gray-500 mt-1">กำหนดจากแอดมิน</div>
-            </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:min-w-105">
+            <InfoGlassCard
+              label="วันเริ่มเช่า"
+              value={formatDateTH(startDate)}
+              hint="กำหนดจากแอดมิน"
+            />
+            <InfoGlassCard
+              label="วันสิ้นสุดสัญญา"
+              value={formatDateTH(endDate)}
+              hint="กำหนดจากแอดมิน"
+            />
           </div>
         </div>
-      </div>
+
+        <div className="absolute -right-16 -top-14 h-52 w-52 rounded-full bg-white/10 blur-sm" />
+        <div className="absolute -bottom-20 -right-4 h-64 w-64 rounded-full bg-cyan-300/20 blur-md" />
+        <div className="absolute left-1/3 top-0 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+      </section>
 
       {/* User card */}
-      <div className="bg-white border rounded-2xl shadow-sm p-5">
-        <div className="font-semibold text-gray-900 mb-4">ข้อมูลผู้ใช้</div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <div className="text-xs text-gray-500 font-medium mb-1">ชื่อ</div>
-            <div className="px-3 py-2 rounded-xl border bg-gray-50 text-gray-900">
-              {data.user?.name ?? "-"}
-            </div>
-          </div>
-
-          <div>
-            <div className="text-xs text-gray-500 font-medium mb-1">อีเมล</div>
-            <div className="px-3 py-2 rounded-xl border bg-gray-50 text-gray-900">
-              {data.user?.email ?? "-"}
-            </div>
-          </div>
-
-          <div>
-            <div className="text-xs text-gray-500 font-medium mb-1">เบอร์โทร</div>
-            <div className="px-3 py-2 rounded-xl border bg-gray-50 text-gray-900">
-              {data.user?.phone ?? "-"}
-            </div>
+      <section className="rounded-[28px] border border-white/70 bg-white/85 p-5 shadow-[0_14px_36px_rgba(15,23,42,0.06)] backdrop-blur-sm">
+        <div className="mb-4">
+          <div className="text-lg font-semibold text-slate-800">ข้อมูลผู้ใช้</div>
+          <div className="mt-1 text-sm text-slate-500">
+            ข้อมูลพื้นฐานของบัญชีผู้ใช้งาน
           </div>
         </div>
-      </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ReadOnlyCard label="ชื่อ" value={data.user?.name ?? "-"} />
+          <ReadOnlyCard label="อีเมล" value={data.user?.email ?? "-"} />
+          <ReadOnlyCard label="เบอร์โทร" value={data.user?.phone ?? "-"} />
+        </div>
+      </section>
 
       {/* Editable tenant info */}
-      <div className="bg-white border rounded-2xl shadow-sm p-5">
-        <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+      <section className="rounded-[28px] border border-white/70 bg-white/85 p-5 shadow-[0_14px_36px_rgba(15,23,42,0.06)] backdrop-blur-sm">
+        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="font-semibold text-gray-900">ข้อมูลผู้เช่า</div>
-            <div className="text-xs text-gray-500 mt-1">แก้ไขข้อมูลติดต่อได้ (วันเริ่มเช่า/สิ้นสุดสัญญาแก้ไม่ได้)</div>
+            <div className="text-lg font-semibold text-slate-800">ข้อมูลผู้เช่า</div>
+            <div className="mt-1 text-sm text-slate-500">
+              แก้ไขข้อมูลติดต่อได้ วันเริ่มเช่าและวันสิ้นสุดสัญญาจะแก้ไม่ได้
+            </div>
           </div>
 
           <button
             onClick={save}
             disabled={saving || !canSave}
-            className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-medium disabled:opacity-50"
+            className="rounded-2xl bg-linear-to-r from-indigo-600 to-blue-600 px-5 py-3 font-medium text-white shadow-[0_12px_26px_rgba(59,130,246,0.22)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(59,130,246,0.28)] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {saving ? "กำลังบันทึก..." : "บันทึก"}
+            {saving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <div className="text-xs text-gray-500 font-medium mb-1">เลขบัตรประชาชน</div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <FieldCard label="เลขบัตรประชาชน">
             <input
               value={(form.citizen_id as any) ?? ""}
-              onChange={(e) => setForm((x) => ({ ...x, citizen_id: e.target.value }))}
-              className="w-full px-3 py-2 rounded-xl border bg-white"
+              onChange={(e) =>
+                setForm((x) => ({ ...x, citizen_id: e.target.value }))
+              }
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
               placeholder="เช่น 1234567890123"
             />
-          </div>
+          </FieldCard>
 
-          <div>
-            <div className="text-xs text-gray-500 font-medium mb-1">ติดต่อฉุกเฉิน</div>
+          <FieldCard label="ติดต่อฉุกเฉิน">
             <input
               value={(form.emergency_contact as any) ?? ""}
-              onChange={(e) => setForm((x) => ({ ...x, emergency_contact: e.target.value }))}
-              className="w-full px-3 py-2 rounded-xl border bg-white"
-              placeholder="ชื่อ/เบอร์/ความสัมพันธ์"
+              onChange={(e) =>
+                setForm((x) => ({ ...x, emergency_contact: e.target.value }))
+              }
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              placeholder="ชื่อ / เบอร์ / ความสัมพันธ์"
             />
-          </div>
+          </FieldCard>
 
           <div className="sm:col-span-2">
-            <div className="text-xs text-gray-500 font-medium mb-1">ที่อยู่</div>
-            <input
-              value={(form.address as any) ?? ""}
-              onChange={(e) => setForm((x) => ({ ...x, address: e.target.value }))}
-              className="w-full px-3 py-2 rounded-xl border bg-white"
-              placeholder="ที่อยู่สำหรับติดต่อ"
-            />
+            <FieldCard label="ที่อยู่">
+              <textarea
+                value={(form.address as any) ?? ""}
+                onChange={(e) =>
+                  setForm((x) => ({ ...x, address: e.target.value }))
+                }
+                className="min-h-30 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                placeholder="ที่อยู่สำหรับติดต่อ"
+              />
+            </FieldCard>
           </div>
         </div>
+      </section>
+    </div>
+  );
+}
+
+function InfoGlassCard({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+}) {
+  return (
+    <div className="rounded-3xl border border-white/30 bg-white/90 p-4 text-slate-800 shadow-[0_10px_24px_rgba(15,23,42,0.08)] backdrop-blur-sm">
+      <div className="text-xs font-medium text-slate-500">{label}</div>
+      <div className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
+        {value}
       </div>
+      {hint && <div className="mt-1 text-[11px] text-slate-500">{hint}</div>}
+    </div>
+  );
+}
+
+function ReadOnlyCard({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200/80 bg-linear-to-r from-white to-slate-50/70 p-4 shadow-[0_8px_20px_rgba(15,23,42,0.04)]">
+      <div className="text-xs font-medium text-slate-500">{label}</div>
+      <div className="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium text-slate-800">
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function FieldCard({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200/80 bg-linear-to-r from-white to-slate-50/70 p-4 shadow-[0_8px_20px_rgba(15,23,42,0.04)]">
+      <div className="mb-2 text-sm font-medium text-slate-700">{label}</div>
+      {children}
     </div>
   );
 }

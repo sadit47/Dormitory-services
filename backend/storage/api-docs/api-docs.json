@@ -1,0 +1,2629 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Dorm Service API",
+        "description": "API documentation for Dorm Service",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/api/v1",
+            "description": "API v1"
+        },
+        {
+            "url": "/api/v1"
+        }
+    ],
+    "paths": {
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login and get Bearer token (Sanctum)",
+                "description": "Returns Sanctum token. Use it as: Authorization: Bearer {token}",
+                "operationId": "985cd5203e2d0a820e113f2f4fdb2847",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "admin@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password"
+                                    },
+                                    "device_name": {
+                                        "type": "string",
+                                        "example": "swagger",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get current user (requires Bearer token)",
+                "operationId": "e339e0e74860c0647fd1d41bbbbc13b2",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout (revoke current token)",
+                "operationId": "a05022a34eef599e04fb0a5254375b84",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/health": {
+            "get": {
+                "tags": [
+                    "System"
+                ],
+                "summary": "Health check",
+                "operationId": "healthCheck",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "ok": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "OK"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/dashboard/summary": {
+            "get": {
+                "tags": [
+                    "Admin Dashboard"
+                ],
+                "summary": "Get admin dashboard summary",
+                "operationId": "161e96a8c3fed2297f0a60c44aa3b6c5",
+                "responses": {
+                    "200": {
+                        "description": "Dashboard summary",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "ok": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "total_rooms": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                },
+                                                "occupied_rooms": {
+                                                    "type": "integer",
+                                                    "example": 42
+                                                },
+                                                "available_rooms": {
+                                                    "type": "integer",
+                                                    "example": 8
+                                                },
+                                                "total_tenants": {
+                                                    "type": "integer",
+                                                    "example": 42
+                                                },
+                                                "pending_invoices": {
+                                                    "type": "integer",
+                                                    "example": 7
+                                                },
+                                                "pending_repairs": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "pending_payments": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/invoices": {
+            "get": {
+                "tags": [
+                    "Admin Invoices"
+                ],
+                "summary": "List invoices",
+                "operationId": "d256cb6258161e2ddb4fc9c80d1544e0",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "rent",
+                                "utility",
+                                "repair",
+                                "cleaning"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invoice list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin Invoices"
+                ],
+                "summary": "Create invoice",
+                "operationId": "c582feb3ac08cb187de5f74585c84511",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "tenant_id",
+                                    "type",
+                                    "period_month",
+                                    "period_year",
+                                    "items"
+                                ],
+                                "properties": {
+                                    "tenant_id": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "room_id": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "rent",
+                                            "utility",
+                                            "repair",
+                                            "cleaning"
+                                        ],
+                                        "example": "rent"
+                                    },
+                                    "period_month": {
+                                        "type": "integer",
+                                        "maximum": 12,
+                                        "minimum": 1,
+                                        "example": 3
+                                    },
+                                    "period_year": {
+                                        "type": "integer",
+                                        "maximum": 2100,
+                                        "minimum": 2000,
+                                        "example": 2026
+                                    },
+                                    "due_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-03-10",
+                                        "nullable": true
+                                    },
+                                    "discount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "minimum": 0,
+                                        "example": 100,
+                                        "nullable": true
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/InvoiceItemInput"
+                                        },
+                                        "minItems": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/invoices/meta": {
+            "get": {
+                "tags": [
+                    "Admin Invoices"
+                ],
+                "summary": "Get invoice meta",
+                "operationId": "86644dc7115ca9ecf674220a20a3ab55",
+                "responses": {
+                    "200": {
+                        "description": "Invoice meta",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvoiceMetaResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/invoices/{invoice}": {
+            "get": {
+                "tags": [
+                    "Admin Invoices"
+                ],
+                "summary": "Show invoice detail",
+                "operationId": "99d5f49ed825097481c391d11d5870ed",
+                "parameters": [
+                    {
+                        "name": "invoice",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invoice detail"
+                    },
+                    "404": {
+                        "description": "Invoice not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Admin Invoices"
+                ],
+                "summary": "Update invoice",
+                "operationId": "082b6a8218ecd75209a8f000ec8f2bf2",
+                "parameters": [
+                    {
+                        "name": "invoice",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "items"
+                                ],
+                                "properties": {
+                                    "due_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-03-15",
+                                        "nullable": true
+                                    },
+                                    "discount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "minimum": 0,
+                                        "example": 100,
+                                        "nullable": true
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/InvoiceItemInput"
+                                        },
+                                        "minItems": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    },
+                    "409": {
+                        "description": "Paid invoice cannot be edited"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin Invoices"
+                ],
+                "summary": "Delete invoice",
+                "operationId": "99be1d8b05ba6507a03acdbe39f96b56",
+                "parameters": [
+                    {
+                        "name": "invoice",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted"
+                    },
+                    "409": {
+                        "description": "Paid invoice cannot be deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/invoices/{invoice}/pdf": {
+            "get": {
+                "tags": [
+                    "Admin Invoices"
+                ],
+                "summary": "Preview invoice PDF",
+                "operationId": "d62e2b1f1e54b8eada11babd2b471363",
+                "parameters": [
+                    {
+                        "name": "invoice",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "download",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "example": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF stream",
+                        "content": {
+                            "application/pdf": {}
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/profile": {
+            "get": {
+                "tags": [
+                    "Admin Profile"
+                ],
+                "summary": "Get admin profile",
+                "operationId": "20062bca44b10a01dac7dcc51547e26a",
+                "responses": {
+                    "200": {
+                        "description": "Profile detail",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "ok": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Admin User"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "admin@dorm.test"
+                                                },
+                                                "phone": {
+                                                    "type": "string",
+                                                    "example": "0811111111"
+                                                },
+                                                "role": {
+                                                    "type": "string",
+                                                    "example": "admin"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Admin Profile"
+                ],
+                "summary": "Update admin profile",
+                "operationId": "16e835eb59e1c88684ec85f6a80ab45f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Admin User"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "0811111111"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "new-password"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "new-password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/repairs": {
+            "get": {
+                "tags": [
+                    "Admin Repairs"
+                ],
+                "summary": "List repairs",
+                "operationId": "877420dbd9a57e9f78ca4abfaaf122d1",
+                "responses": {
+                    "200": {
+                        "description": "Repair list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "ok": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Repair"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/repairs/{repair}/status": {
+            "patch": {
+                "tags": [
+                    "Admin Repairs"
+                ],
+                "summary": "Update repair status",
+                "operationId": "2b038a8589df110e0c2a4bd7070fb948",
+                "parameters": [
+                    {
+                        "name": "repair",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "example": "in_progress"
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "example": "Technician assigned"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    },
+                    "404": {
+                        "description": "Repair not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/repairs/{repair}": {
+            "delete": {
+                "tags": [
+                    "Admin Repairs"
+                ],
+                "summary": "Delete repair",
+                "operationId": "df7c9191b67afe76a91eec5f0f5e7c99",
+                "parameters": [
+                    {
+                        "name": "repair",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted"
+                    },
+                    "404": {
+                        "description": "Repair not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/rooms/meta": {
+            "get": {
+                "tags": [
+                    "Admin Rooms"
+                ],
+                "summary": "Get room meta",
+                "operationId": "4d73647e54264cbd98f51fc0da9cbc08",
+                "responses": {
+                    "200": {
+                        "description": "Room meta",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RoomMetaResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/rooms": {
+            "get": {
+                "tags": [
+                    "Admin Rooms"
+                ],
+                "summary": "List rooms",
+                "operationId": "4205037ae6a173fe0699e3c39bf36862",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "vacant",
+                                "occupied",
+                                "maintenance"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Room list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin Rooms"
+                ],
+                "summary": "Create room",
+                "operationId": "33d2bced8ddf78967f636101c9f27b5a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "code",
+                                    "floor",
+                                    "room_type_id",
+                                    "price_monthly",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "code": {
+                                        "type": "string",
+                                        "maxLength": 50,
+                                        "example": "A101"
+                                    },
+                                    "floor": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "example": 1
+                                    },
+                                    "room_type_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "price_monthly": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "minimum": 0,
+                                        "example": 3500
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "vacant",
+                                            "occupied",
+                                            "maintenance"
+                                        ],
+                                        "example": "vacant"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/rooms/{room}": {
+            "get": {
+                "tags": [
+                    "Admin Rooms"
+                ],
+                "summary": "Show room detail",
+                "operationId": "92880e8c3e8005a42d5e38c3a84cc286",
+                "parameters": [
+                    {
+                        "name": "room",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Room detail",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "ok": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Room"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Room not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Admin Rooms"
+                ],
+                "summary": "Update room",
+                "operationId": "f4639e446a2e1b34293ca8c96aa15070",
+                "parameters": [
+                    {
+                        "name": "room",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "code": {
+                                        "type": "string",
+                                        "maxLength": 50,
+                                        "example": "A101"
+                                    },
+                                    "floor": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "example": 2
+                                    },
+                                    "room_type_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "price_monthly": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "minimum": 0,
+                                        "example": 3800
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "vacant",
+                                            "occupied",
+                                            "maintenance"
+                                        ],
+                                        "example": "occupied"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin Rooms"
+                ],
+                "summary": "Delete room",
+                "operationId": "ae8651c1e783e19e20bfe9496c05d61f",
+                "parameters": [
+                    {
+                        "name": "room",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/rooms/{room}/tenant": {
+            "get": {
+                "tags": [
+                    "Admin Rooms"
+                ],
+                "summary": "Get active tenant of room",
+                "operationId": "08c2196f4829051c354212b1a2068440",
+                "parameters": [
+                    {
+                        "name": "room",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tenant in room"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/tenants/meta": {
+            "get": {
+                "tags": [
+                    "Admin Tenants"
+                ],
+                "summary": "Get tenant meta",
+                "operationId": "cf093e7cce8483149f5473b20e745f06",
+                "responses": {
+                    "200": {
+                        "description": "Tenant meta",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TenantMetaResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/tenants": {
+            "get": {
+                "tags": [
+                    "Admin Tenants"
+                ],
+                "summary": "List tenants",
+                "operationId": "1417cc9513846e9a41f6b7728fe0bfa2",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tenant list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin Tenants"
+                ],
+                "summary": "Create tenant",
+                "operationId": "6a3daff00f642d9561702d0de59ee1b3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 120,
+                                        "example": "Somchai Jaidee"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "maxLength": 190,
+                                        "example": "tenant1@dorm.test"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "minLength": 8,
+                                        "example": "password123"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "maxLength": 50,
+                                        "example": "0812345678",
+                                        "nullable": true
+                                    },
+                                    "citizen_id": {
+                                        "type": "string",
+                                        "maxLength": 50,
+                                        "example": "1234567890123",
+                                        "nullable": true
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Bangkok",
+                                        "nullable": true
+                                    },
+                                    "emergency_contact": {
+                                        "type": "string",
+                                        "maxLength": 190,
+                                        "example": "Mother 0899999999",
+                                        "nullable": true
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-03-01",
+                                        "nullable": true
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-12-31",
+                                        "nullable": true
+                                    },
+                                    "room_id": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/tenants/{tenant}": {
+            "get": {
+                "tags": [
+                    "Admin Tenants"
+                ],
+                "summary": "Show tenant detail",
+                "operationId": "79c8807e98f52be5a20bf24a5cb4467f",
+                "parameters": [
+                    {
+                        "name": "tenant",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tenant detail"
+                    },
+                    "404": {
+                        "description": "Tenant not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Admin Tenants"
+                ],
+                "summary": "Update tenant",
+                "operationId": "226026904d67c55709be34b4911f2559",
+                "parameters": [
+                    {
+                        "name": "tenant",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 120,
+                                        "example": "Somchai Jaidee"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "maxLength": 190,
+                                        "example": "tenant1@dorm.test"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "maxLength": 50,
+                                        "example": "0812345678",
+                                        "nullable": true
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "minLength": 8,
+                                        "example": "newpassword123",
+                                        "nullable": true
+                                    },
+                                    "citizen_id": {
+                                        "type": "string",
+                                        "maxLength": 50,
+                                        "example": "1234567890123",
+                                        "nullable": true
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Bangkok",
+                                        "nullable": true
+                                    },
+                                    "emergency_contact": {
+                                        "type": "string",
+                                        "maxLength": 190,
+                                        "example": "Mother 0899999999",
+                                        "nullable": true
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-03-01",
+                                        "nullable": true
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-12-31",
+                                        "nullable": true
+                                    },
+                                    "room_id": {
+                                        "type": "integer",
+                                        "example": 2,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin Tenants"
+                ],
+                "summary": "Delete tenant",
+                "operationId": "5d0dafa6a048f0f54ea57cf79d59ac93",
+                "parameters": [
+                    {
+                        "name": "tenant",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted"
+                    },
+                    "422": {
+                        "description": "Cannot delete tenant"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/payments/pending": {
+            "get": {
+                "tags": [
+                    "Payment Review"
+                ],
+                "summary": "List pending payments",
+                "operationId": "175687cf171dd32c0a42f73ebbb4f5a6",
+                "responses": {
+                    "200": {
+                        "description": "Pending payment list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "ok": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 301
+                                                    },
+                                                    "invoice_id": {
+                                                        "type": "integer",
+                                                        "example": 1001
+                                                    },
+                                                    "tenant_name": {
+                                                        "type": "string",
+                                                        "example": "Somchai Jaidee"
+                                                    },
+                                                    "amount": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 4500
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "pending"
+                                                    },
+                                                    "slip_url": {
+                                                        "type": "string",
+                                                        "example": "/api/v1/files/payment-slip.jpg"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/payments/{payment}/approve": {
+            "post": {
+                "tags": [
+                    "Payment Review"
+                ],
+                "summary": "Approve payment",
+                "operationId": "caafeaadc652e3b9199de8d6134f281f",
+                "parameters": [
+                    {
+                        "name": "payment",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Approved"
+                    },
+                    "404": {
+                        "description": "Payment not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/payments/{payment}/reject": {
+            "post": {
+                "tags": [
+                    "Payment Review"
+                ],
+                "summary": "Reject payment",
+                "operationId": "8d23f76de6546a2d26f695c22c3ce6ab",
+                "parameters": [
+                    {
+                        "name": "payment",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "reason": {
+                                        "type": "string",
+                                        "example": "Slip is unclear"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Rejected"
+                    },
+                    "404": {
+                        "description": "Payment not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tenant/dashboard/summary": {
+            "get": {
+                "tags": [
+                    "Tenant Dashboard"
+                ],
+                "summary": "Get tenant dashboard summary",
+                "operationId": "a4f172f1a53c0f564c7589be72b64a20",
+                "responses": {
+                    "200": {
+                        "description": "Dashboard summary",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "ok": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "room_name": {
+                                                    "type": "string",
+                                                    "example": "A-101"
+                                                },
+                                                "pending_invoices": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "unpaid_amount": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 4500
+                                                },
+                                                "open_repairs": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tenant/invoices": {
+            "get": {
+                "tags": [
+                    "Tenant Invoices"
+                ],
+                "summary": "List my invoices",
+                "operationId": "c4cd15e82f3d3661d40599e6c84cb563",
+                "responses": {
+                    "200": {
+                        "description": "Invoice list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "ok": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Invoice"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tenant/invoices/{invoice}": {
+            "get": {
+                "tags": [
+                    "Tenant Invoices Extra"
+                ],
+                "summary": "Show my invoice detail",
+                "operationId": "2853194936d926cacf1272c034af8cf5",
+                "parameters": [
+                    {
+                        "name": "invoice",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invoice detail"
+                    },
+                    "404": {
+                        "description": "Invoice not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tenant/invoices/{invoice}/pdf": {
+            "get": {
+                "tags": [
+                    "Tenant Invoices Extra"
+                ],
+                "summary": "Download my invoice PDF",
+                "operationId": "6bf35bfae62e8bde7427c449406990b2",
+                "parameters": [
+                    {
+                        "name": "invoice",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF file",
+                        "content": {
+                            "application/pdf": {}
+                        }
+                    },
+                    "404": {
+                        "description": "Invoice not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tenant/payments/{invoice}": {
+            "post": {
+                "tags": [
+                    "Tenant Payments"
+                ],
+                "summary": "Upload payment for invoice",
+                "operationId": "c3511687aaac39a2584871de11a69a0e",
+                "parameters": [
+                    {
+                        "name": "invoice",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "amount",
+                                    "paid_at",
+                                    "slip"
+                                ],
+                                "properties": {
+                                    "amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 4500
+                                    },
+                                    "paid_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-03-06 14:20:00"
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "example": "Paid via mobile banking"
+                                    },
+                                    "slip": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Payment uploaded"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "404": {
+                        "description": "Invoice not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tenant/profile": {
+            "get": {
+                "tags": [
+                    "Tenant Profile"
+                ],
+                "summary": "Get tenant profile",
+                "operationId": "0359fad324d666b51bf774220e42000a",
+                "responses": {
+                    "200": {
+                        "description": "Profile detail",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "ok": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Somchai Jaidee"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "tenant1@dorm.test"
+                                                },
+                                                "phone": {
+                                                    "type": "string",
+                                                    "example": "0812345678"
+                                                },
+                                                "role": {
+                                                    "type": "string",
+                                                    "example": "tenant"
+                                                },
+                                                "room_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Tenant Profile"
+                ],
+                "summary": "Update tenant profile",
+                "operationId": "194ffcd1ba42367c28813a22b535869c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Somchai Jaidee"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "0812345678"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "new-password"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "new-password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tenant/repairs": {
+            "get": {
+                "tags": [
+                    "Tenant Repairs"
+                ],
+                "summary": "List my repairs",
+                "operationId": "730c11b15047592989b5db7ae023efdc",
+                "responses": {
+                    "200": {
+                        "description": "Repair list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "ok": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Repair"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tenant Repairs"
+                ],
+                "summary": "Create repair request",
+                "operationId": "6da69fbce1060ce6257edee7d1b91b25",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Air conditioner leaking"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Water dripping from indoor unit"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ApiResponse": {
+                "properties": {
+                    "ok": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Success"
+                    },
+                    "data": {}
+                },
+                "type": "object"
+            },
+            "PaginatedResponse": {
+                "properties": {
+                    "ok": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Success"
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "meta": {
+                        "properties": {
+                            "current_page": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "last_page": {
+                                "type": "integer",
+                                "example": 3
+                            },
+                            "per_page": {
+                                "type": "integer",
+                                "example": 10
+                            },
+                            "total": {
+                                "type": "integer",
+                                "example": 25
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "RoomTypeMini": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Standard"
+                    }
+                },
+                "type": "object"
+            },
+            "UserMini": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Somchai Jaidee"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "tenant1@dorm.test"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "0812345678",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Room": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "code": {
+                        "type": "string",
+                        "example": "A101"
+                    },
+                    "floor": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "room_type_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "price_monthly": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 3500
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "vacant"
+                    },
+                    "room_type": {
+                        "$ref": "#/components/schemas/RoomTypeMini"
+                    }
+                },
+                "type": "object"
+            },
+            "RoomMetaResponse": {
+                "properties": {
+                    "ok": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "OK"
+                    },
+                    "data": {
+                        "properties": {
+                            "room_types": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/RoomTypeMini"
+                                }
+                            },
+                            "statuses": {
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "value": {
+                                            "type": "string",
+                                            "example": "vacant"
+                                        },
+                                        "label": {
+                                            "type": "string",
+                                            "example": "ว่าง"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "Tenant": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 15
+                    },
+                    "citizen_id": {
+                        "type": "string",
+                        "example": "1234567890123",
+                        "nullable": true
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "Bangkok",
+                        "nullable": true
+                    },
+                    "emergency_contact": {
+                        "type": "string",
+                        "example": "Mother 0899999999",
+                        "nullable": true
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-03-01",
+                        "nullable": true
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/UserMini"
+                    }
+                },
+                "type": "object"
+            },
+            "VacantRoomMini": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "code": {
+                        "type": "string",
+                        "example": "A101"
+                    }
+                },
+                "type": "object"
+            },
+            "TenantMetaResponse": {
+                "properties": {
+                    "ok": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "OK"
+                    },
+                    "data": {
+                        "properties": {
+                            "vacant_rooms": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/VacantRoomMini"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "InvoiceItemInput": {
+                "required": [
+                    "description",
+                    "qty",
+                    "unit_price"
+                ],
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "example": "ค่าเช่าห้อง"
+                    },
+                    "qty": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 1
+                    },
+                    "unit_price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 3500
+                    }
+                },
+                "type": "object"
+            },
+            "Repair": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 101
+                    },
+                    "tenant_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "room_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Air conditioner broken"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "AC not cooling properly"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "pending"
+                    },
+                    "priority": {
+                        "type": "string",
+                        "example": "normal"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-07T10:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-07T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "Payment": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 301
+                    },
+                    "invoice_id": {
+                        "type": "integer",
+                        "example": 1001
+                    },
+                    "tenant_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 4500
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "pending"
+                    },
+                    "payment_method": {
+                        "type": "string",
+                        "example": "transfer"
+                    },
+                    "slip_url": {
+                        "type": "string",
+                        "example": "/api/v1/files/payment-slip.jpg"
+                    },
+                    "paid_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "InvoiceItem": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "invoice_id": {
+                        "type": "integer",
+                        "example": 1001
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "ค่าเช่าห้อง"
+                    },
+                    "qty": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 1
+                    },
+                    "unit_price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 3500
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 3500
+                    }
+                },
+                "type": "object"
+            },
+            "RoomMini": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "code": {
+                        "type": "string",
+                        "example": "A101"
+                    },
+                    "floor": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "occupied"
+                    }
+                },
+                "type": "object"
+            },
+            "Invoice": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1001
+                    },
+                    "invoice_no": {
+                        "type": "string",
+                        "example": "INV-RENT-202603-0001"
+                    },
+                    "tenant_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "room_id": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "rent"
+                    },
+                    "period_month": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "period_year": {
+                        "type": "integer",
+                        "example": 2026
+                    },
+                    "due_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-03-10",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "unpaid"
+                    },
+                    "subtotal": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 4000
+                    },
+                    "discount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 100
+                    },
+                    "total": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 3900
+                    },
+                    "tenant": {
+                        "$ref": "#/components/schemas/Tenant"
+                    },
+                    "room": {
+                        "$ref": "#/components/schemas/RoomMini"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/InvoiceItem"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "InvoiceMetaResponse": {
+                "properties": {
+                    "ok": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Success"
+                    },
+                    "data": {
+                        "properties": {
+                            "tenants": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Tenant"
+                                }
+                            },
+                            "rooms": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/RoomMini"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "Sanctum",
+                "description": "Paste token only (Swagger will send: Authorization: Bearer <token>)"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Authentication (Sanctum Bearer Token)"
+        },
+        {
+            "name": "Admin Dashboard",
+            "description": "Admin dashboard summary"
+        },
+        {
+            "name": "Admin Invoices",
+            "description": "Admin invoice management"
+        },
+        {
+            "name": "Admin Profile",
+            "description": "Admin profile management"
+        },
+        {
+            "name": "Admin Repairs",
+            "description": "Admin repair management"
+        },
+        {
+            "name": "Admin Rooms",
+            "description": "Admin room management"
+        },
+        {
+            "name": "Admin Tenants",
+            "description": "Admin tenant management"
+        },
+        {
+            "name": "Payment Review",
+            "description": "Admin review tenant payments"
+        },
+        {
+            "name": "Tenant Dashboard",
+            "description": "Tenant dashboard summary"
+        },
+        {
+            "name": "Tenant Invoices",
+            "description": "Tenant invoice access"
+        },
+        {
+            "name": "Tenant Invoices Extra",
+            "description": "Tenant invoice show/pdf endpoints"
+        },
+        {
+            "name": "Tenant Payments",
+            "description": "Tenant payment upload"
+        },
+        {
+            "name": "Tenant Profile",
+            "description": "Tenant profile management"
+        },
+        {
+            "name": "Tenant Repairs",
+            "description": "Tenant repair requests"
+        },
+        {
+            "name": "System",
+            "description": "System"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ]
+}

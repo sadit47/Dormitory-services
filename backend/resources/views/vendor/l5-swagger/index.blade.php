@@ -3,115 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ $documentationTitle }}</title>
+
     <link rel="stylesheet" type="text/css" href="{{ l5_swagger_asset($documentation, 'swagger-ui.css') }}">
     <link rel="icon" type="image/png" href="{{ l5_swagger_asset($documentation, 'favicon-32x32.png') }}" sizes="32x32"/>
     <link rel="icon" type="image/png" href="{{ l5_swagger_asset($documentation, 'favicon-16x16.png') }}" sizes="16x16"/>
-    <style>
-    html
-    {
-        box-sizing: border-box;
-        overflow: -moz-scrollbars-vertical;
-        overflow-y: scroll;
-    }
-    *,
-    *:before,
-    *:after
-    {
-        box-sizing: inherit;
-    }
 
-    body {
-      margin:0;
-      background: #fafafa;
-    }
+    <style>
+        html { box-sizing: border-box; overflow-y: scroll; }
+        *, *:before, *:after { box-sizing: inherit; }
+        body { margin:0; background:#fafafa; }
+
+        /* ✅ Mini Postman panel */
+        #swagger-login-panel{
+            position: fixed;
+            top: 70px;
+            right: 18px;
+            z-index: 9999;
+            width: 320px;
+            background: #fff;
+            border: 1px solid rgba(0,0,0,.12);
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.12);
+            padding: 12px;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+        }
+        #swagger-login-panel h4{
+            margin:0 0 10px 0;
+            font-size: 14px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+        #swagger-login-panel .row{ margin-bottom: 8px; }
+        #swagger-login-panel input{
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid rgba(0,0,0,.18);
+            border-radius: 8px;
+            outline: none;
+        }
+        #swagger-login-panel .btns{
+            display:flex;
+            gap:8px;
+            margin-top: 8px;
+        }
+        #swagger-login-panel button{
+            flex:1;
+            padding: 9px 10px;
+            border: 0;
+            border-radius: 8px;
+            cursor:pointer;
+            font-weight: 600;
+        }
+        #btnLogin{ background:#16a34a; color:#fff; }
+        #btnCopy{ background:#2563eb; color:#fff; }
+        #btnClear{ background:#ef4444; color:#fff; }
+        #swagger-login-panel .small{
+            margin-top: 8px;
+            font-size: 12px;
+            color: #334155;
+            word-break: break-all;
+        }
+        #swagger-login-panel .hint{
+            font-size: 12px;
+            color:#64748b;
+            margin-top: 6px;
+            line-height: 1.35;
+        }
+        #swagger-login-panel .pill{
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background:#f1f5f9;
+            color:#0f172a;
+        }
     </style>
+
     @if(config('l5-swagger.defaults.ui.display.dark_mode'))
         <style>
-            body#dark-mode,
-            #dark-mode .scheme-container {
-                background: #1b1b1b;
-            }
-            #dark-mode .scheme-container,
-            #dark-mode .opblock .opblock-section-header{
-                box-shadow: 0 1px 2px 0 rgba(255, 255, 255, 0.15);
-            }
-            #dark-mode .operation-filter-input,
-            #dark-mode .dialog-ux .modal-ux,
-            #dark-mode input[type=email],
-            #dark-mode input[type=file],
-            #dark-mode input[type=password],
-            #dark-mode input[type=search],
-            #dark-mode input[type=text],
-            #dark-mode textarea{
-                background: #343434;
-                color: #e7e7e7;
-            }
-            #dark-mode .title,
-            #dark-mode li,
-            #dark-mode p,
-            #dark-mode table,
-            #dark-mode label,
-            #dark-mode .opblock-tag,
-            #dark-mode .opblock .opblock-summary-operation-id,
-            #dark-mode .opblock .opblock-summary-path,
-            #dark-mode .opblock .opblock-summary-path__deprecated,
-            #dark-mode h1,
-            #dark-mode h2,
-            #dark-mode h3,
-            #dark-mode h4,
-            #dark-mode h5,
-            #dark-mode .btn,
-            #dark-mode .tab li,
-            #dark-mode .parameter__name,
-            #dark-mode .parameter__type,
-            #dark-mode .prop-format,
-            #dark-mode .loading-container .loading:after{
-                color: #e7e7e7;
-            }
-            #dark-mode .opblock-description-wrapper p,
-            #dark-mode .opblock-external-docs-wrapper p,
-            #dark-mode .opblock-title_normal p,
-            #dark-mode .response-col_status,
-            #dark-mode table thead tr td,
-            #dark-mode table thead tr th,
-            #dark-mode .response-col_links,
-            #dark-mode .swagger-ui{
-                color: wheat;
-            }
-            #dark-mode .parameter__extension,
-            #dark-mode .parameter__in,
-            #dark-mode .model-title{
-                color: #949494;
-            }
-            #dark-mode table thead tr td,
-            #dark-mode table thead tr th{
-                border-color: rgba(120,120,120,.2);
-            }
-            #dark-mode .opblock .opblock-section-header{
-                background: transparent;
-            }
-            #dark-mode .opblock.opblock-post{
-                background: rgba(73,204,144,.25);
-            }
-            #dark-mode .opblock.opblock-get{
-                background: rgba(97,175,254,.25);
-            }
-            #dark-mode .opblock.opblock-put{
-                background: rgba(252,161,48,.25);
-            }
-            #dark-mode .opblock.opblock-delete{
-                background: rgba(249,62,62,.25);
-            }
-            #dark-mode .loading-container .loading:before{
-                border-color: rgba(255,255,255,10%);
-                border-top-color: rgba(255,255,255,.6);
-            }
-            #dark-mode svg:not(:root){
-                fill: #e7e7e7;
-            }
-            #dark-mode .opblock-summary-description {
-                color: #fafafa;
-            }
+            body#dark-mode, #dark-mode .scheme-container { background: #1b1b1b; }
         </style>
     @endif
 </head>
@@ -119,56 +89,191 @@
 <body @if(config('l5-swagger.defaults.ui.display.dark_mode')) id="dark-mode" @endif>
 <div id="swagger-ui"></div>
 
+<!-- ✅ Mini Postman panel -->
+<div id="swagger-login-panel">
+    <h4>
+        <span>Login (Sanctum)</span>
+        <span class="pill" id="tokenState">No token</span>
+    </h4>
+
+    <div class="row">
+        <input id="loginEmail" type="text" placeholder="email" autocomplete="username">
+    </div>
+    <div class="row">
+        <input id="loginPass" type="password" placeholder="password" autocomplete="current-password">
+    </div>
+
+    <div class="btns">
+        <button id="btnLogin" type="button">Login</button>
+        <button id="btnCopy" type="button">Copy</button>
+        <button id="btnClear" type="button">Clear</button>
+    </div>
+
+    <div class="small" id="tokenPreview"></div>
+    <div class="hint">
+        - Login จะยิง <b>/api/v1/auth/login</b><br>
+        - Swagger จะแนบ <b>Authorization: Bearer &lt;token&gt;</b> ให้อัตโนมัติทุก request
+    </div>
+</div>
+
 <script src="{{ l5_swagger_asset($documentation, 'swagger-ui-bundle.js') }}"></script>
 <script src="{{ l5_swagger_asset($documentation, 'swagger-ui-standalone-preset.js') }}"></script>
+
 <script>
-    window.onload = function() {
-        const urls = [];
+window.onload = function() {
+    const TOKEN_KEY = 'swagger_sanctum_token';
 
-        @foreach($urlsToDocs as $title => $url)
-            urls.push({name: "{{ $title }}", url: "{{ $url }}"});
-        @endforeach
+    const elState   = document.getElementById('tokenState');
+    const elPrev    = document.getElementById('tokenPreview');
+    const elEmail   = document.getElementById('loginEmail');
+    const elPass    = document.getElementById('loginPass');
+    const btnLogin  = document.getElementById('btnLogin');
+    const btnCopy   = document.getElementById('btnCopy');
+    const btnClear  = document.getElementById('btnClear');
 
-        // Build a system
-        const ui = SwaggerUIBundle({
-            dom_id: '#swagger-ui',
-            urls: urls,
-            "urls.primaryName": "{{ $documentationTitle }}",
-            operationsSorter: {!! isset($operationsSorter) ? '"' . $operationsSorter . '"' : 'null' !!},
-            configUrl: {!! isset($configUrl) ? '"' . $configUrl . '"' : 'null' !!},
-            validatorUrl: {!! isset($validatorUrl) ? '"' . $validatorUrl . '"' : 'null' !!},
-            oauth2RedirectUrl: "{{ route('l5-swagger.'.$documentation.'.oauth2_callback', [], $useAbsolutePath) }}",
-
-            requestInterceptor: function(request) {
-                request.headers['X-CSRF-TOKEN'] = '{{ csrf_token() }}';
-                return request;
-            },
-
-            presets: [
-                SwaggerUIBundle.presets.apis,
-                SwaggerUIStandalonePreset
-            ],
-
-            plugins: [
-                SwaggerUIBundle.plugins.DownloadUrl
-            ],
-
-            layout: "StandaloneLayout",
-            docExpansion : "{!! config('l5-swagger.defaults.ui.display.doc_expansion', 'none') !!}",
-            deepLinking: true,
-            filter: {!! config('l5-swagger.defaults.ui.display.filter') ? 'true' : 'false' !!},
-            persistAuthorization: "{!! config('l5-swagger.defaults.ui.authorization.persist_authorization') ? 'true' : 'false' !!}",
-
-        })
-
-        window.ui = ui
-
-        @if(in_array('oauth2', array_column(config('l5-swagger.defaults.securityDefinitions.securitySchemes'), 'type')))
-        ui.initOAuth({
-            usePkceWithAuthorizationCodeGrant: "{!! (bool)config('l5-swagger.defaults.ui.authorization.oauth2.use_pkce_with_authorization_code_grant') !!}"
-        })
-        @endif
+    function getToken() {
+        return localStorage.getItem(TOKEN_KEY) || '';
     }
+
+    function setToken(token) {
+        localStorage.setItem(TOKEN_KEY, token);
+        renderToken();
+        // พยายาม preauthorize ให้ lock icon เปลี่ยน (ถ้า swagger-ui รองรับ)
+        try {
+            if (window.ui && window.ui.preauthorizeApiKey) {
+                window.ui.preauthorizeApiKey('bearerAuth', 'Bearer ' + token);
+            }
+        } catch (e) {}
+    }
+
+    function clearToken() {
+        localStorage.removeItem(TOKEN_KEY);
+        renderToken();
+    }
+
+    function renderToken() {
+        const t = getToken();
+        if (!t) {
+            elState.textContent = 'No token';
+            elPrev.textContent = '';
+            return;
+        }
+        elState.textContent = 'Token ready';
+        elPrev.textContent = 'Bearer ' + t.substring(0, 24) + '...';
+    }
+
+    const urls = [];
+    @foreach($urlsToDocs as $title => $url)
+        urls.push({name: "{{ $title }}", url: "{{ $url }}"});
+    @endforeach
+
+    const ui = SwaggerUIBundle({
+        dom_id: '#swagger-ui',
+        urls: urls,
+        "urls.primaryName": "{{ $documentationTitle }}",
+
+        supportedSubmitMethods: ['get','post','put','patch','delete','options','head'],
+        operationsSorter: {!! isset($operationsSorter) ? '"' . $operationsSorter . '"' : 'null' !!},
+        configUrl: {!! isset($configUrl) ? '"' . $configUrl . '"' : 'null' !!},
+        validatorUrl: {!! isset($validatorUrl) ? '"' . $validatorUrl . '"' : 'null' !!},
+        oauth2RedirectUrl: "{{ route('l5-swagger.'.$documentation.'.oauth2_callback', [], $useAbsolutePath) }}",
+
+        // ✅ แนบ Authorization อัตโนมัติทุก request ถ้ามี token
+        requestInterceptor: function(request) {
+            const t = getToken();
+            if (t) {
+                request.headers['Authorization'] = 'Bearer ' + t;
+            }
+            request.headers['X-CSRF-TOKEN'] = '{{ csrf_token() }}';
+            return request;
+        },
+
+        presets: [
+            SwaggerUIBundle.presets.apis,
+            SwaggerUIStandalonePreset
+        ],
+
+        plugins: [
+            SwaggerUIBundle.plugins.DownloadUrl
+        ],
+
+        layout: "StandaloneLayout",
+        docExpansion : "{!! config('l5-swagger.defaults.ui.display.doc_expansion', 'none') !!}",
+        deepLinking: true,
+        filter: {!! config('l5-swagger.defaults.ui.display.filter') ? 'true' : 'false' !!},
+        persistAuthorization: true
+    });
+
+    window.ui = ui;
+
+    // ✅ Login button
+    btnLogin.addEventListener('click', async () => {
+        const email = (elEmail.value || '').trim();
+        const password = (elPass.value || '').trim();
+
+        if (!email || !password) {
+            alert('กรอก email + password ก่อน');
+            return;
+        }
+
+        btnLogin.disabled = true;
+        btnLogin.textContent = 'Logging in...';
+
+        try {
+            const res = await fetch(window.location.origin + '/api/v1/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            const json = await res.json().catch(() => ({}));
+
+            // โปรเจกต์คุณคืนรูปแบบ { ok, message, data: { token } }
+            const token = json?.data?.token || json?.token || '';
+
+            if (!res.ok || !token) {
+                console.error(json);
+                alert('Login ไม่สำเร็จ: ' + (json?.message || ('HTTP ' + res.status)));
+                return;
+            }
+
+            setToken(token);
+            alert('Login OK: token ถูกใส่ให้ Swagger แล้ว');
+        } catch (e) {
+            console.error(e);
+            alert('Login error: ' + e.message);
+        } finally {
+            btnLogin.disabled = false;
+            btnLogin.textContent = 'Login';
+        }
+    });
+
+    // ✅ Copy token
+    btnCopy.addEventListener('click', async () => {
+        const t = getToken();
+        if (!t) { alert('ยังไม่มี token'); return; }
+        const full = 'Bearer ' + t;
+        try {
+            await navigator.clipboard.writeText(full);
+            alert('Copy แล้ว');
+        } catch (e) {
+            // fallback
+            prompt('Copy token:', full);
+        }
+    });
+
+    // ✅ Clear token
+    btnClear.addEventListener('click', () => {
+        clearToken();
+        alert('ล้าง token แล้ว');
+    });
+
+    renderToken();
+};
 </script>
+
 </body>
 </html>

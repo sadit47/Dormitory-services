@@ -12,6 +12,7 @@ export type RepairPriority = "low" | "medium" | "high";
 export type RepairStatus = "submitted" | "pending" | "in_progress" | "completed" | string;
 
 export type RepairListItem = {
+  images: any;
   id: number;
   title: string;
   description?: string | null;
@@ -20,6 +21,7 @@ export type RepairListItem = {
   requested_at?: string | null;
   created_at?: string;
   room_id?: number | null;
+
 };
 
 export type Paginated<T> = {
