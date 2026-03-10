@@ -6,6 +6,8 @@ import TenantInvoiceDetailPage from "@/features/tenant/invoices/TenantInvoiceDet
 import TenantUploadSlipPage from "@/features/tenant/payments/TenantUploadSlipPage";
 import TenantRepairsPage from "@/features/tenant/repairs/TenantRepairsPage";
 import TenantProfilePage from "@/features/tenant/profile/TenantProfilePage";
+import TenantAnnouncementsPage from "@/features/tenant/announcements/TenantAnnouncementsPage";
+import TenantParcelsPage from "@/features/tenant/parcels/TenantParcelsPage";
 
 export default function TenantRoutes() {
   return (
@@ -17,6 +19,8 @@ export default function TenantRoutes() {
         <Route path="payments/upload" element={<TenantUploadSlipPage />} />
         <Route path="repairs" element={<TenantRepairsPage />} />
         <Route path="profile" element={<TenantProfilePage />} />
+        <Route path="announcements" element={<TenantAnnouncementsPage />} />
+        <Route path="parcels" element={<TenantParcelsPage />} />
       </Route>
 
       {/* เข้า /tenant แล้วเด้งไป dashboard */}

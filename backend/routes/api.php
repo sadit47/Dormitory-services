@@ -20,6 +20,12 @@ use App\Http\Controllers\Api\V1\HealthController;
 
 use App\Http\Controllers\Api\V1\FileController;
 
+use App\Http\Controllers\Api\V1\Admin\ParcelController as AdminParcelController;
+use App\Http\Controllers\Api\V1\Tenant\ParcelController as TenantParcelController;
+use App\Http\Controllers\Api\V1\Admin\AnnouncementController as AdminAnnouncementController;
+use App\Http\Controllers\Api\V1\Tenant\AnnouncementController as TenantAnnouncementController;
+use App\Http\Controllers\Api\V1\NotificationController;
+
 Route::prefix('v1')->group(function () {
     Route::get('/health', [HealthController::class, 'health']);
 
@@ -29,6 +35,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/files/{file}', [FileController::class, 'show'])->name('files.show');
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::post('/notifications/{notification}/read', [NotificationController::class, 'read']);
+        Route::post('/notifications/read-all', [NotificationController::class, 'readAll']);
     });
 
     // Admin APIs
@@ -80,6 +89,24 @@ Route::prefix('v1')->group(function () {
         Route::get('/admin/payments/pending', [AdminPaymentReviewController::class, 'pending']);
         Route::post('/admin/payments/{payment}/approve', [AdminPaymentReviewController::class, 'approve']);
         Route::post('/admin/payments/{payment}/reject', [AdminPaymentReviewController::class, 'reject']);
+
+        // Parcels
+        Route::get('/admin/parcels', [AdminParcelController::class, 'index']);
+        Route::get('/admin/parcels/{parcel}', [AdminParcelController::class, 'show']);
+        Route::post('/admin/parcels', [AdminParcelController::class, 'store']);
+        Route::put('/admin/parcels/{parcel}', [AdminParcelController::class, 'update']);
+        Route::post('/admin/parcels/{parcel}/pickup', [AdminParcelController::class, 'pickup']);
+        Route::delete('/admin/parcels/{parcel}', [AdminParcelController::class, 'destroy']);
+
+        // Announcements
+        Route::get('/admin/announcements', [AdminAnnouncementController::class, 'index']);
+        Route::get('/admin/announcements/{announcement}', [AdminAnnouncementController::class, 'show']);
+        Route::post('/admin/announcements', [AdminAnnouncementController::class, 'store']);
+        Route::put('/admin/announcements/{announcement}', [AdminAnnouncementController::class, 'update']);
+        
+        Route::post('/admin/announcements/{announcement}/publish', [AdminAnnouncementController::class, 'publish']);
+        Route::post('/admin/announcements/{announcement}/expire', [AdminAnnouncementController::class, 'expire']);
+        Route::delete('/admin/announcements/{announcement}', [AdminAnnouncementController::class, 'destroy']);
     });
 
     // Tenant APIs
@@ -105,5 +132,15 @@ Route::prefix('v1')->group(function () {
 
         // Payments
         Route::post('/tenant/payments/{invoice}', [TenantPaymentController::class, 'store']);
+
+        // Parcels
+        Route::get('/tenant/parcels', [TenantParcelController::class, 'index']);
+        Route::get('/tenant/parcels/{parcel}', [TenantParcelController::class, 'show']);
+
+        // Announcements
+        Route::get('/tenant/announcements', [TenantAnnouncementController::class, 'index']);
+        Route::get('/tenant/announcements/{announcement}', [TenantAnnouncementController::class, 'show']);
+        Route::post('/tenant/announcements/{announcement}/read', [TenantAnnouncementController::class, 'read']);
+        Route::get('/tenant/announcements/urgent/active', [TenantAnnouncementController::class, 'urgentActive']);
     });
 });

@@ -8,6 +8,8 @@ import AdminInvoicesPage from "../../features/admin/invoices/AdminInvoicesPage";
 import AdminRepairsPage from "../../features/admin/repairs/AdminRepairsPage";
 import AdminPaymentReviewPage from "../../features/admin/payments/AdminPaymentReviewPage";
 import AdminProfilePage from "../../features/admin/profile/AdminProfilePage";
+import AdminParcelsPage from "../../features/admin/parcels/AdminParcelsPage";
+import AdminAnnouncementsPage from "../../features/admin/announcements/AdminAnnouncementsPage";
 import ProtectedRoute from "../guards/ProtectedRoute";
 import RoleRoute from "../guards/RoleRoute";
 
@@ -33,6 +35,8 @@ export default function AdminRoutes() {
         <Route path="repairs" element={<AdminRepairsPage />} />
         <Route path="payments" element={<AdminPaymentReviewPage />} />
         <Route path="profile" element={<AdminProfilePage />} />
+        <Route path="parcels" element={<AdminParcelsPage />} />
+        <Route path="announcements" element={<AdminAnnouncementsPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="login" replace />} />

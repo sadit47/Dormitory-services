@@ -252,4 +252,114 @@ use OpenApi\Attributes as OA;
         )
     ]
 )]
+
+#[OA\Schema(
+    schema: 'FileMini',
+    type: 'object',
+    properties: [
+        new OA\Property(property: 'id', type: 'integer', example: 1),
+        new OA\Property(property: 'owner_user_id', type: 'integer', example: 1),
+        new OA\Property(property: 'ref_type', type: 'string', example: 'announcement_image'),
+        new OA\Property(property: 'ref_id', type: 'integer', example: 10),
+        new OA\Property(property: 'disk', type: 'string', example: 'public'),
+        new OA\Property(property: 'path', type: 'string', example: 'announcement_images/abc123.jpg'),
+        new OA\Property(property: 'original_name', type: 'string', example: 'photo.jpg'),
+        new OA\Property(property: 'mime', type: 'string', example: 'image/jpeg'),
+        new OA\Property(property: 'size', type: 'integer', example: 204800),
+    ]
+)]
+#[OA\Schema(
+    schema: 'AnnouncementTarget',
+    type: 'object',
+    properties: [
+        new OA\Property(property: 'id', type: 'integer', example: 1),
+        new OA\Property(property: 'announcement_id', type: 'integer', example: 100),
+        new OA\Property(property: 'target_type', type: 'string', example: 'all'),
+        new OA\Property(property: 'target_id', type: 'integer', nullable: true, example: null),
+    ]
+)]
+#[OA\Schema(
+    schema: 'AnnouncementRead',
+    type: 'object',
+    properties: [
+        new OA\Property(property: 'id', type: 'integer', example: 1),
+        new OA\Property(property: 'announcement_id', type: 'integer', example: 100),
+        new OA\Property(property: 'user_id', type: 'integer', example: 15),
+        new OA\Property(property: 'read_at', type: 'string', format: 'date-time', nullable: true, example: '2026-03-10T09:00:00Z'),
+        new OA\Property(property: 'user', ref: '#/components/schemas/UserMini'),
+    ]
+)]
+#[OA\Schema(
+    schema: 'Announcement',
+    type: 'object',
+    properties: [
+        new OA\Property(property: 'id', type: 'integer', example: 100),
+        new OA\Property(property: 'title', type: 'string', example: 'แจ้งปิดน้ำชั่วคราว'),
+        new OA\Property(property: 'content', type: 'string', example: 'ขอแจ้งปิดน้ำชั่วคราวในวันพรุ่งนี้ เวลา 09:00-12:00 น.'),
+        new OA\Property(property: 'type', type: 'string', example: 'maintenance'),
+        new OA\Property(property: 'status', type: 'string', example: 'published'),
+        new OA\Property(property: 'is_pinned', type: 'boolean', example: true),
+        new OA\Property(property: 'starts_at', type: 'string', format: 'date-time', nullable: true, example: '2026-03-10T09:00:00Z'),
+        new OA\Property(property: 'ends_at', type: 'string', format: 'date-time', nullable: true, example: '2026-03-10T12:00:00Z'),
+        new OA\Property(property: 'created_by_user_id', type: 'integer', example: 1),
+        new OA\Property(property: 'creator', ref: '#/components/schemas/UserMini'),
+        new OA\Property(
+            property: 'targets',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/AnnouncementTarget')
+        ),
+        new OA\Property(
+            property: 'reads',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/AnnouncementRead')
+        ),
+        new OA\Property(
+            property: 'files',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/FileMini')
+        ),
+    ]
+)]
+#[OA\Schema(
+    schema: 'Notification',
+    type: 'object',
+    properties: [
+        new OA\Property(property: 'id', type: 'integer', example: 1),
+        new OA\Property(property: 'user_id', type: 'integer', example: 15),
+        new OA\Property(property: 'type', type: 'string', example: 'announcement'),
+        new OA\Property(property: 'title', type: 'string', example: 'แจ้งเตือนใหม่'),
+        new OA\Property(property: 'message', type: 'string', example: 'มีประกาศใหม่จากผู้ดูแลหอพัก'),
+        new OA\Property(property: 'ref_type', type: 'string', nullable: true, example: 'announcement'),
+        new OA\Property(property: 'ref_id', type: 'integer', nullable: true, example: 100),
+        new OA\Property(property: 'is_read', type: 'boolean', example: false),
+        new OA\Property(property: 'read_at', type: 'string', format: 'date-time', nullable: true, example: null),
+    ]
+)]
+#[OA\Schema(
+    schema: 'Parcel',
+    type: 'object',
+    properties: [
+        new OA\Property(property: 'id', type: 'integer', example: 501),
+        new OA\Property(property: 'tenant_id', type: 'integer', example: 10),
+        new OA\Property(property: 'room_id', type: 'integer', nullable: true, example: 1),
+        new OA\Property(property: 'tracking_no', type: 'string', nullable: true, example: 'TH123456789'),
+        new OA\Property(property: 'courier', type: 'string', nullable: true, example: 'Flash Express'),
+        new OA\Property(property: 'sender_name', type: 'string', nullable: true, example: 'Shopee Seller'),
+        new OA\Property(property: 'note', type: 'string', nullable: true, example: 'วางไว้ที่เคาน์เตอร์'),
+        new OA\Property(property: 'status', type: 'string', example: 'arrived'),
+        new OA\Property(property: 'received_at', type: 'string', format: 'date-time', nullable: true, example: '2026-03-10T10:30:00Z'),
+        new OA\Property(property: 'received_by_user_id', type: 'integer', nullable: true, example: 1),
+        new OA\Property(property: 'picked_up_at', type: 'string', format: 'date-time', nullable: true, example: null),
+        new OA\Property(property: 'picked_up_by_user_id', type: 'integer', nullable: true, example: null),
+        new OA\Property(property: 'tenant', ref: '#/components/schemas/Tenant'),
+        new OA\Property(property: 'room', ref: '#/components/schemas/RoomMini'),
+        new OA\Property(property: 'receivedBy', ref: '#/components/schemas/UserMini'),
+        new OA\Property(property: 'pickedUpBy', ref: '#/components/schemas/UserMini'),
+        new OA\Property(
+            property: 'files',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/FileMini')
+        ),
+    ]
+)]
 final class Schemas {}

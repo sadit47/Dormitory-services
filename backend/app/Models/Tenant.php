@@ -88,4 +88,9 @@ class Tenant extends Model
     {
         return $this->hasMany(CleaningRequest::class);
     }
+
+    public function parcels(): HasMany
+    {
+    return $this->hasMany(Parcel::class);
+    }
 }

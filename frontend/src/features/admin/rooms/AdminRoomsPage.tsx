@@ -433,7 +433,7 @@ export default function AdminRoomsPage() {
                 <div
                   key={r.id}
                   className={[
-                    "rounded-2xl border border-slate-500 bg-white p-4 shadow-sm",
+                    "rounded-2xl border border-slate-300 bg-white p-4 shadow-sm",
                     "ring-1 ring-transparent transition",
                     "hover:-translate-y-0.5 hover:shadow-md hover:ring-4",
                     cardAccentRing(r.status),

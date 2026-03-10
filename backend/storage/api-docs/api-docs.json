@@ -141,6 +141,307 @@
                 }
             }
         },
+        "/admin/announcements": {
+            "get": {
+                "tags": [
+                    "Admin Announcements"
+                ],
+                "summary": "List announcements",
+                "operationId": "dbf45cede7ac797865f3c6f17c59671d",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "draft",
+                                "published",
+                                "expired"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "general",
+                                "urgent",
+                                "maintenance"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Announcement list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin Announcements"
+                ],
+                "summary": "Create announcement",
+                "operationId": "6cc0367d8823748290d7ce6eeaf21b6a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "content",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "general",
+                                            "urgent",
+                                            "maintenance"
+                                        ]
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "draft",
+                                            "published",
+                                            "expired"
+                                        ]
+                                    },
+                                    "is_pinned": {
+                                        "type": "boolean"
+                                    },
+                                    "starts_at": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "ends_at": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/announcements/{announcement}": {
+            "get": {
+                "tags": [
+                    "Admin Announcements"
+                ],
+                "summary": "Show announcement",
+                "operationId": "304ef488210179928133904747807635",
+                "parameters": [
+                    {
+                        "name": "announcement",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Announcement detail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Admin Announcements"
+                ],
+                "summary": "Update announcement",
+                "operationId": "d62e4005af0db9dcf6090ac829460edb",
+                "parameters": [
+                    {
+                        "name": "announcement",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "is_pinned": {
+                                        "type": "boolean"
+                                    },
+                                    "starts_at": {
+                                        "type": "string"
+                                    },
+                                    "ends_at": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin Announcements"
+                ],
+                "summary": "Delete announcement",
+                "operationId": "9525b6aa718cb4050ec3b8e3fc639a4e",
+                "parameters": [
+                    {
+                        "name": "announcement",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/announcements/{announcement}/publish": {
+            "post": {
+                "tags": [
+                    "Admin Announcements"
+                ],
+                "summary": "Publish announcement",
+                "operationId": "7e4142c590df109f7172a32b267c31b1",
+                "parameters": [
+                    {
+                        "name": "announcement",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Published"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/announcements/{announcement}/expire": {
+            "post": {
+                "tags": [
+                    "Admin Announcements"
+                ],
+                "summary": "Expire announcement",
+                "operationId": "c5c8f0df3fc7cace5e18f1e60e03b56f",
+                "parameters": [
+                    {
+                        "name": "announcement",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Expired"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/admin/dashboard/summary": {
             "get": {
                 "tags": [
@@ -554,6 +855,271 @@
                         "content": {
                             "application/pdf": {}
                         }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/parcels": {
+            "get": {
+                "tags": [
+                    "Admin Parcels"
+                ],
+                "summary": "List parcels",
+                "operationId": "ab04c67b5361d03f0794f69c1b614137",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "arrived",
+                                "picked_up",
+                                "cancelled"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Parcel list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin Parcels"
+                ],
+                "summary": "Create parcel",
+                "operationId": "8407fdd1f992720a46455baba53b42b6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "tenant_id"
+                                ],
+                                "properties": {
+                                    "tenant_id": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "tracking_no": {
+                                        "type": "string",
+                                        "example": "TH123456789"
+                                    },
+                                    "courier": {
+                                        "type": "string",
+                                        "example": "Kerry"
+                                    },
+                                    "sender_name": {
+                                        "type": "string",
+                                        "example": "Shopee"
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "example": "วางไว้ที่เคาน์เตอร์"
+                                    },
+                                    "images[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/parcels/{parcel}": {
+            "get": {
+                "tags": [
+                    "Admin Parcels"
+                ],
+                "summary": "Show parcel",
+                "operationId": "a275f1c104ba10394309e19a2962efb5",
+                "parameters": [
+                    {
+                        "name": "parcel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Parcel detail"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Admin Parcels"
+                ],
+                "summary": "Update parcel information",
+                "description": "ใช้สำหรับแก้ tracking_no, courier, sender_name, note และเพิ่มรูปเท่านั้น ไม่ใช้เปลี่ยนสถานะรับพัสดุ",
+                "operationId": "a6892e3aa84f24af3c5f62d45c47f9e9",
+                "parameters": [
+                    {
+                        "name": "parcel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "tracking_no": {
+                                        "type": "string",
+                                        "example": "TH123456789"
+                                    },
+                                    "courier": {
+                                        "type": "string",
+                                        "example": "Kerry"
+                                    },
+                                    "sender_name": {
+                                        "type": "string",
+                                        "example": "Shopee"
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "example": "วางไว้ที่เคาน์เตอร์"
+                                    },
+                                    "images[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin Parcels"
+                ],
+                "summary": "Delete parcel",
+                "operationId": "e83ff20b3538dd41234e42677f497a95",
+                "parameters": [
+                    {
+                        "name": "parcel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/parcels/{parcel}/pickup": {
+            "post": {
+                "tags": [
+                    "Admin Parcels"
+                ],
+                "summary": "Mark parcel as picked up",
+                "description": "ใช้ endpoint นี้เมื่อลูกค้ามารับพัสดุ ระบบจะอัปเดต status, picked_up_at และ picked_up_by_user_id ให้อัตโนมัติ",
+                "operationId": "aeccae80f7058bd98b003ee92df6aeca",
+                "parameters": [
+                    {
+                        "name": "parcel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Picked up"
+                    },
+                    "422": {
+                        "description": "Parcel already picked up"
                     }
                 },
                 "security": [
@@ -1447,6 +2013,87 @@
                 ]
             }
         },
+        "/notifications": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "List notifications",
+                "operationId": "1f807f303c28a5a912a1f2b6f65a8d48",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notification list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/notifications/{notification}/read": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Mark one notification as read",
+                "operationId": "d839e7d7bb5342031cd167557dbbbd8a",
+                "parameters": [
+                    {
+                        "name": "notification",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/notifications/read-all": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Mark all notifications as read",
+                "operationId": "9cda1e3b73086ce939d901043804bab7",
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/admin/payments/pending": {
             "get": {
                 "tags": [
@@ -1587,6 +2234,138 @@
                     },
                     "404": {
                         "description": "Payment not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tenant/announcements": {
+            "get": {
+                "tags": [
+                    "Tenant Announcements"
+                ],
+                "summary": "List announcements visible to tenant",
+                "operationId": "3781185fce9aaa76e6c144da8e1cfce1",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "general",
+                                "urgent",
+                                "maintenance"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Announcement list"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tenant/announcements/{announcement}": {
+            "get": {
+                "tags": [
+                    "Tenant Announcements"
+                ],
+                "summary": "Show announcement detail for tenant",
+                "operationId": "0191e83cc5be1b0920b3555a556a84cb",
+                "parameters": [
+                    {
+                        "name": "announcement",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Announcement detail"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Announcement not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tenant/announcements/{announcement}/read": {
+            "post": {
+                "tags": [
+                    "Tenant Announcements"
+                ],
+                "summary": "Mark announcement as read",
+                "operationId": "dd4ead4d68fac01f8f21833fc114c448",
+                "parameters": [
+                    {
+                        "name": "announcement",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tenant/announcements/urgent/active": {
+            "get": {
+                "tags": [
+                    "Tenant Announcements"
+                ],
+                "summary": "List active urgent announcements",
+                "operationId": "ae5ba7ed3623b639ebf45aa3482ab968",
+                "responses": {
+                    "200": {
+                        "description": "Urgent announcements"
                     }
                 },
                 "security": [
@@ -1760,6 +2539,84 @@
                     },
                     "404": {
                         "description": "Invoice not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tenant/parcels": {
+            "get": {
+                "tags": [
+                    "Tenant Parcels"
+                ],
+                "summary": "List tenant parcels",
+                "operationId": "701aa3905925509e296f84f63cb16c59",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "arrived",
+                                "picked_up",
+                                "cancelled"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Parcel list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tenant/parcels/{parcel}": {
+            "get": {
+                "tags": [
+                    "Tenant Parcels"
+                ],
+                "summary": "Show tenant parcel detail",
+                "operationId": "596298453b3c57b9d4c367e237248d73",
+                "parameters": [
+                    {
+                        "name": "parcel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Parcel detail"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Parcel not found"
                     }
                 },
                 "security": [
@@ -2548,6 +3405,288 @@
                     }
                 },
                 "type": "object"
+            },
+            "FileMini": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "owner_user_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "ref_type": {
+                        "type": "string",
+                        "example": "announcement_image"
+                    },
+                    "ref_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "disk": {
+                        "type": "string",
+                        "example": "public"
+                    },
+                    "path": {
+                        "type": "string",
+                        "example": "announcement_images/abc123.jpg"
+                    },
+                    "original_name": {
+                        "type": "string",
+                        "example": "photo.jpg"
+                    },
+                    "mime": {
+                        "type": "string",
+                        "example": "image/jpeg"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "example": 204800
+                    }
+                },
+                "type": "object"
+            },
+            "AnnouncementTarget": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "announcement_id": {
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "target_type": {
+                        "type": "string",
+                        "example": "all"
+                    },
+                    "target_id": {
+                        "type": "integer",
+                        "example": null,
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "AnnouncementRead": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "announcement_id": {
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 15
+                    },
+                    "read_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-10T09:00:00Z",
+                        "nullable": true
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/UserMini"
+                    }
+                },
+                "type": "object"
+            },
+            "Announcement": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "แจ้งปิดน้ำชั่วคราว"
+                    },
+                    "content": {
+                        "type": "string",
+                        "example": "ขอแจ้งปิดน้ำชั่วคราวในวันพรุ่งนี้ เวลา 09:00-12:00 น."
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "maintenance"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "published"
+                    },
+                    "is_pinned": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "starts_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-10T09:00:00Z",
+                        "nullable": true
+                    },
+                    "ends_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-10T12:00:00Z",
+                        "nullable": true
+                    },
+                    "created_by_user_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "creator": {
+                        "$ref": "#/components/schemas/UserMini"
+                    },
+                    "targets": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AnnouncementTarget"
+                        }
+                    },
+                    "reads": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AnnouncementRead"
+                        }
+                    },
+                    "files": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/FileMini"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Notification": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 15
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "announcement"
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "แจ้งเตือนใหม่"
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "มีประกาศใหม่จากผู้ดูแลหอพัก"
+                    },
+                    "ref_type": {
+                        "type": "string",
+                        "example": "announcement",
+                        "nullable": true
+                    },
+                    "ref_id": {
+                        "type": "integer",
+                        "example": 100,
+                        "nullable": true
+                    },
+                    "is_read": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "read_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": null,
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Parcel": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 501
+                    },
+                    "tenant_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "room_id": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "tracking_no": {
+                        "type": "string",
+                        "example": "TH123456789",
+                        "nullable": true
+                    },
+                    "courier": {
+                        "type": "string",
+                        "example": "Flash Express",
+                        "nullable": true
+                    },
+                    "sender_name": {
+                        "type": "string",
+                        "example": "Shopee Seller",
+                        "nullable": true
+                    },
+                    "note": {
+                        "type": "string",
+                        "example": "วางไว้ที่เคาน์เตอร์",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "arrived"
+                    },
+                    "received_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-10T10:30:00Z",
+                        "nullable": true
+                    },
+                    "received_by_user_id": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "picked_up_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "picked_up_by_user_id": {
+                        "type": "integer",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "tenant": {
+                        "$ref": "#/components/schemas/Tenant"
+                    },
+                    "room": {
+                        "$ref": "#/components/schemas/RoomMini"
+                    },
+                    "receivedBy": {
+                        "$ref": "#/components/schemas/UserMini"
+                    },
+                    "pickedUpBy": {
+                        "$ref": "#/components/schemas/UserMini"
+                    },
+                    "files": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/FileMini"
+                        }
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -2565,12 +3704,20 @@
             "description": "Authentication (Sanctum Bearer Token)"
         },
         {
+            "name": "Admin Announcements",
+            "description": "Admin announcement management"
+        },
+        {
             "name": "Admin Dashboard",
             "description": "Admin dashboard summary"
         },
         {
             "name": "Admin Invoices",
             "description": "Admin invoice management"
+        },
+        {
+            "name": "Admin Parcels",
+            "description": "Parcel management"
         },
         {
             "name": "Admin Profile",
@@ -2589,8 +3736,16 @@
             "description": "Admin tenant management"
         },
         {
+            "name": "Notifications",
+            "description": "User notifications"
+        },
+        {
             "name": "Payment Review",
             "description": "Admin review tenant payments"
+        },
+        {
+            "name": "Tenant Announcements",
+            "description": "Tenant announcement access"
         },
         {
             "name": "Tenant Dashboard",
@@ -2603,6 +3758,10 @@
         {
             "name": "Tenant Invoices Extra",
             "description": "Tenant invoice show/pdf endpoints"
+        },
+        {
+            "name": "Tenant Parcels",
+            "description": "Tenant parcel access"
         },
         {
             "name": "Tenant Payments",

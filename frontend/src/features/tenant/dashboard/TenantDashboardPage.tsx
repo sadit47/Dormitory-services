@@ -1,18 +1,30 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-} from "recharts";
 import {
   tenantDashboardApi,
   type TenantDashboardSummary,
 } from "./services/tenantDashboardApi";
+import { tenantAnnouncementsApi } from "../announcements/services/tenantAnnouncementsApi";
+import { tenantParcelsApi } from "../parcels/services/tenantParcelsApi";
+
+type DashboardAnnouncement = {
+  id: number;
+  title: string;
+  content: string;
+  type: "general" | "urgent" | "maintenance" | string;
+  is_pinned?: boolean;
+  starts_at?: string | null;
+};
+
+type DashboardParcel = {
+  id: number;
+  tracking_no?: string | null;
+  courier?: string | null;
+  sender_name?: string | null;
+  status: "arrived" | "picked_up" | "cancelled" | string;
+  received_at?: string | null;
+  room?: { code?: string | null; room_no?: string | null } | null;
+};
 
 function getRoomLabel(room: any) {
   if (!room) return "-";
@@ -28,43 +40,84 @@ function getRoomLabel(room: any) {
   );
 }
 
-function displayStatus(inv: any) {
-  if (inv?.payment_status === "waiting") return "กำลังดำเนินการ";
-  if (inv?.status === "paid") return "ชำระแล้ว";
-  if (inv?.status === "unpaid" || inv?.status === "partial") return "ยังไม่ชำระ";
-  return inv?.status ?? "-";
-}
-
-function statusPill(inv: any) {
-  if (inv?.payment_status === "waiting") {
-    return "bg-amber-50 text-amber-700 ring-1 ring-amber-200";
-  }
-  if (inv?.status === "paid") {
-    return "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200";
-  }
-  if (inv?.status === "unpaid" || inv?.status === "partial") {
-    return "bg-rose-50 text-rose-700 ring-1 ring-rose-200";
-  }
-  return "bg-slate-100 text-slate-600 ring-1 ring-slate-200";
-}
-
 function formatMoney(n: any) {
   return Number(n ?? 0).toLocaleString();
 }
 
+function formatDateTH(v?: string | null) {
+  if (!v) return "-";
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return String(v);
+  return new Intl.DateTimeFormat("th-TH", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(d);
+}
+
+function announcementBadgeType(v?: string) {
+  if (v === "general") return "bg-sky-50 text-sky-700 ring-1 ring-sky-200";
+  if (v === "urgent") return "bg-rose-50 text-rose-700 ring-1 ring-rose-200";
+  if (v === "maintenance") return "bg-amber-50 text-amber-800 ring-1 ring-amber-200";
+  return "bg-slate-100 text-slate-700 ring-1 ring-slate-200";
+}
+
+function announcementTypeLabel(v?: string) {
+  if (v === "general") return "ข่าวทั่วไป";
+  if (v === "urgent") return "ข่าวด่วน";
+  if (v === "maintenance") return "ซ่อมบำรุง";
+  return v || "-";
+}
+
+function parcelStatusLabel(value?: string) {
+  if (!value) return "-";
+  if (value === "arrived") return "รอรับ";
+  if (value === "picked_up") return "รับแล้ว";
+  if (value === "cancelled") return "ยกเลิก";
+  return value;
+}
+
+function parcelBadgeClass(status?: string) {
+  if (status === "arrived") return "bg-amber-50 text-amber-800 ring-1 ring-amber-200";
+  if (status === "picked_up") return "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200";
+  if (status === "cancelled") return "bg-rose-50 text-rose-700 ring-1 ring-rose-200";
+  return "bg-slate-100 text-slate-700 ring-1 ring-slate-200";
+}
+
+function normalizePaged<T>(res: any): T[] {
+  if (Array.isArray(res)) return res;
+  if (res && Array.isArray(res.data)) return res.data;
+  return [];
+}
+
 export default function TenantDashboardPage() {
   const navigate = useNavigate();
+
   const [data, setData] = useState<TenantDashboardSummary | null>(null);
+  const [announcements, setAnnouncements] = useState<DashboardAnnouncement[]>([]);
+  const [parcels, setParcels] = useState<DashboardParcel[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    tenantDashboardApi
-      .summary()
-      .then(setData)
+
+    Promise.all([
+      tenantDashboardApi.summary(),
+      tenantAnnouncementsApi.list("", 1, 3),
+      tenantParcelsApi.list("", 1, 3),
+    ])
+      .then(([summary, annRes, parcelRes]) => {
+        setData(summary);
+        setAnnouncements(normalizePaged<DashboardAnnouncement>(annRes).slice(0, 3));
+        setParcels(normalizePaged<DashboardParcel>(parcelRes).slice(0, 3));
+      })
       .catch((err) => {
-        console.error("TenantDashboard summary error:", err);
+        console.error("TenantDashboard load error:", err);
         setData(null);
+        setAnnouncements([]);
+        setParcels([]);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -79,30 +132,6 @@ export default function TenantDashboardPage() {
     }
     navigate("/tenant/invoices");
   };
-
-  const chart = useMemo(() => {
-    if (!data) return { rows: [], mode: "none" as const };
-
-    const paidHistory = (data as any).paid_history;
-    if (Array.isArray(paidHistory) && paidHistory.length) {
-      return {
-        mode: "monthly" as const,
-        rows: paidHistory.map((x: any) => ({
-          label: String(x.label ?? ""),
-          amount: Number(x.amount ?? 0),
-        })),
-      };
-    }
-
-    const paid = (data.latest_invoices ?? []).filter((x: any) => x.status === "paid");
-    return {
-      mode: "latest" as const,
-      rows: paid.map((x: any) => ({
-        label: String(x.invoice_no ?? `${x.period_month}/${x.period_year}`),
-        amount: Number(x.total ?? 0),
-      })),
-    };
-  }, [data]);
 
   if (loading) {
     return (
@@ -194,110 +223,118 @@ export default function TenantDashboardPage() {
         />
       </section>
 
-      {/* Chart */}
-      <section className="rounded-[28px] border border-white/70 bg-white/85 p-5 shadow-[0_12px_36px_rgba(15,23,42,0.05)] backdrop-blur-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <div className="text-base font-semibold text-slate-800">ยอดชำระย้อนหลัง</div>
-            <div className="mt-1 text-xs text-slate-500">
-              {chart.mode === "monthly"
-                ? "สรุปรายเดือน"
-                : chart.mode === "latest"
-                ? "จากรายการชำระล่าสุด"
-                : "-"}
+      {/* ข่าวสาร + พัสดุ */}
+      <section className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+        {/* ข่าวสาร */}
+        <section className="rounded-[28px] border border-white/70 bg-white/85 p-5 shadow-[0_12px_36px_rgba(15,23,42,0.05)] backdrop-blur-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <div className="text-base font-semibold text-slate-800">ข่าวสารล่าสุด</div>
+              <div className="mt-1 text-xs text-slate-500">ประกาศล่าสุดจากหอพัก</div>
             </div>
+
+            <button
+              onClick={() => navigate("/tenant/announcements")}
+              className="text-sm font-medium text-indigo-600 transition hover:text-indigo-700"
+            >
+              ดูทั้งหมด
+            </button>
           </div>
 
-          <div className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700 ring-1 ring-sky-100">
-            📈 Payment Trend
-          </div>
-        </div>
+          {announcements.length ? (
+            <div className="space-y-3">
+              {announcements.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-2xl border border-slate-200/80 bg-linear-to-r from-white to-slate-50/70 p-4 shadow-[0_8px_22px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(15,23,42,0.07)]"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="font-semibold text-slate-800">{item.title}</div>
 
-        {chart.rows.length ? (
-          <div className="h-64 rounded-2xl bg-linear-to-b from-slate-50 to-white p-3">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chart.rows}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="label" tick={{ fontSize: 12, fill: "#64748b" }} />
-                <YAxis tick={{ fontSize: 12, fill: "#64748b" }} />
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: "16px",
-                    border: "1px solid #e2e8f0",
-                    boxShadow: "0 12px 30px rgba(15,23,42,0.08)",
-                  }}
-                  formatter={(value: any) => [`${formatMoney(value)} บาท`, "ยอดชำระ"]}
-                  labelFormatter={(label: any) => `ช่วง: ${label}`}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="amount"
-                  stroke="#4f8df7"
-                  strokeWidth={3}
-                  dot={{ r: 3, fill: "#4f8df7" }}
-                  activeDot={{ r: 5 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <div className="rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
-            ยังไม่มีข้อมูลยอดชำระ
-          </div>
-        )}
-      </section>
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${announcementBadgeType(
+                        item.type
+                      )}`}
+                    >
+                      {announcementTypeLabel(item.type)}
+                    </span>
 
-      {/* Latest Invoices */}
-      <section className="rounded-[28px] border border-white/70 bg-white/85 p-5 shadow-[0_12px_36px_rgba(15,23,42,0.05)] backdrop-blur-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="text-base font-semibold text-slate-800">ใบแจ้งหนี้ล่าสุด</div>
-          <button
-            onClick={() => navigate("/tenant/invoices")}
-            className="text-sm font-medium text-indigo-600 transition hover:text-indigo-700"
-          >
-            ดูทั้งหมด
-          </button>
-        </div>
-
-        {data.latest_invoices?.length ? (
-          <div className="space-y-3">
-            {data.latest_invoices.map((inv: any) => (
-              <div
-                key={inv.id}
-                className="group rounded-2xl border border-slate-200/80 bg-linear-to-r from-white to-slate-50/70 p-4 shadow-[0_8px_22px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(15,23,42,0.07)]"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="font-semibold text-slate-800">{inv.invoice_no}</div>
-                    <div className="mt-1 text-sm text-slate-500">
-                      งวด {inv.period_month}/{inv.period_year}
-                    </div>
-                    {inv.due_date && (
-                      <div className="mt-1 text-xs text-slate-400">
-                        กำหนดชำระ: {inv.due_date}
-                      </div>
-                    )}
+                    {item.is_pinned ? (
+                      <span className="inline-flex rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700 ring-1 ring-violet-200">
+                        ปักหมุด
+                      </span>
+                    ) : null}
                   </div>
 
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-slate-800">
-                      {formatMoney(inv.total)} บาท
-                    </div>
-                    <div
-                      className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusPill(inv)}`}
-                    >
-                      {displayStatus(inv)}
-                    </div>
+                  <div className="mt-2 line-clamp-2 text-sm text-slate-600">
+                    {item.content}
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+              ยังไม่มีข่าวสาร
+            </div>
+          )}
+        </section>
+
+        {/* พัสดุ */}
+        <section className="rounded-[28px] border border-white/70 bg-white/85 p-5 shadow-[0_12px_36px_rgba(15,23,42,0.05)] backdrop-blur-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <div className="text-base font-semibold text-slate-800">พัสดุล่าสุด</div>
+              <div className="mt-1 text-xs text-slate-500">ติดตามพัสดุที่เกี่ยวข้องกับห้องของคุณ</div>
+            </div>
+
+            <button
+              onClick={() => navigate("/tenant/parcels")}
+              className="text-sm font-medium text-indigo-600 transition hover:text-indigo-700"
+            >
+              ดูทั้งหมด
+            </button>
           </div>
-        ) : (
-          <div className="rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
-            ยังไม่มีใบแจ้งหนี้
-          </div>
-        )}
+
+          {parcels.length ? (
+            <div className="space-y-3">
+              {parcels.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-2xl border border-slate-200/80 bg-linear-to-r from-white to-slate-50/70 p-4 shadow-[0_8px_22px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(15,23,42,0.07)]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-slate-800">
+                        {item.tracking_no || `Parcel #${item.id}`}
+                      </div>
+                      <div className="mt-1 text-sm text-slate-500">
+                        ขนส่ง: {item.courier || "-"}
+                      </div>
+                      <div className="mt-1 text-sm text-slate-500">
+                        ผู้ส่ง: {item.sender_name || "-"}
+                      </div>
+                      <div className="mt-2 text-xs text-slate-400">
+                        รับเข้า: {formatDateTH(item.received_at)}
+                      </div>
+                    </div>
+
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${parcelBadgeClass(
+                        item.status
+                      )}`}
+                    >
+                      {parcelStatusLabel(item.status)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+              ยังไม่มีพัสดุ
+            </div>
+          )}
+        </section>
       </section>
     </div>
   );

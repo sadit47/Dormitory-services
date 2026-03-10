@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { adminInvoicesApi } from "./services/adminInvoicesApi";
-import type { InvoiceCreatePayload, InvoiceUpdatePayload, InvoiceType } from "./services/adminInvoicesApi";
+import type {
+  InvoiceCreatePayload,
+  InvoiceUpdatePayload,
+  InvoiceType,
+} from "./services/adminInvoicesApi";
 
 /* ===================== Types ===================== */
 type InvoiceRow = {
@@ -22,7 +26,11 @@ type InvoiceRow = {
   discount?: number | string | null;
   total?: number | string | null;
 
-  tenant?: { id?: number; user?: { name?: string; email?: string; phone?: string } | null } | null;
+  tenant?: {
+    id?: number;
+    user?: { name?: string; email?: string; phone?: string } | null;
+  } | null;
+
   room?: { id?: number; code?: string } | null;
 
   items?: { description?: string; qty?: number; unit_price?: number }[];
@@ -41,6 +49,19 @@ type InvoicesMeta = {
   rooms?: { id: number; code?: string; floor?: number; status?: string }[];
 };
 
+type ItemForm = {
+  description: string;
+  qty: number;
+  unit_price: number;
+};
+
+type UtilityForm = {
+  water_units: number;
+  water_unit_price: number;
+  electric_units: number;
+  electric_unit_price: number;
+};
+
 function isPaged<T>(x: any): x is Paged<T> {
   return x && typeof x === "object" && Array.isArray(x.data);
 }
@@ -49,7 +70,10 @@ function isPaged<T>(x: any): x is Paged<T> {
 function money(v: any) {
   const n = Number(v ?? 0);
   if (Number.isNaN(n)) return "-";
-  return n.toLocaleString("th-TH", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  return n.toLocaleString("th-TH", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
 }
 
 function typeLabel(t?: string) {
@@ -78,10 +102,60 @@ function badgeClass(status?: string) {
   return "bg-slate-100 text-slate-700 ring-slate-200";
 }
 
-type ItemForm = { description: string; qty: number; unit_price: number };
-
 function calcSubtotal(items: ItemForm[]) {
-  return items.reduce((sum, it) => sum + Number(it.qty || 0) * Number(it.unit_price || 0), 0);
+  return items.reduce(
+    (sum, it) => sum + Number(it.qty || 0) * Number(it.unit_price || 0),
+    0
+  );
+}
+
+function buildUtilityItems(utility: UtilityForm): ItemForm[] {
+  const items: ItemForm[] = [];
+
+  if (
+    Number(utility.water_units) > 0 ||
+    Number(utility.water_unit_price) > 0
+  ) {
+    items.push({
+      description: "ค่าน้ำ",
+      qty: Number(utility.water_units || 0),
+      unit_price: Number(utility.water_unit_price || 0),
+    });
+  }
+
+  if (
+    Number(utility.electric_units) > 0 ||
+    Number(utility.electric_unit_price) > 0
+  ) {
+    items.push({
+      description: "ค่าไฟฟ้า",
+      qty: Number(utility.electric_units || 0),
+      unit_price: Number(utility.electric_unit_price || 0),
+    });
+  }
+
+  return items.length
+    ? items
+    : [
+        { description: "ค่าน้ำ", qty: 0, unit_price: 0 },
+        { description: "ค่าไฟฟ้า", qty: 0, unit_price: 0 },
+      ];
+}
+
+function extractUtilityForm(items: ItemForm[]): UtilityForm {
+  const waterItem = items.find((x) => String(x.description).includes("น้ำ"));
+  const electricItem = items.find(
+    (x) =>
+      String(x.description).includes("ไฟ") ||
+      String(x.description).toLowerCase().includes("electric")
+  );
+
+  return {
+    water_units: Number(waterItem?.qty ?? 0),
+    water_unit_price: Number(waterItem?.unit_price ?? 0),
+    electric_units: Number(electricItem?.qty ?? 0),
+    electric_unit_price: Number(electricItem?.unit_price ?? 0),
+  };
 }
 
 /* ===================== Modal ===================== */
@@ -97,6 +171,7 @@ function Modal({
   onClose: () => void;
 }) {
   if (!open) return null;
+
   return (
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-slate-900/40" onClick={onClose} />
@@ -112,7 +187,7 @@ function Modal({
               ปิด
             </button>
           </div>
-          <div className="p-4">{children}</div>
+          <div className="max-h-[80vh] overflow-y-auto p-4">{children}</div>
         </div>
       </div>
     </div>
@@ -135,7 +210,10 @@ export default function AdminInvoicesPage() {
   // paging
   const [page, setPage] = useState(1);
   const perPage = 10;
-  const totalPages = useMemo(() => Math.max(1, Math.ceil(total / perPage)), [total, perPage]);
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(total / perPage)),
+    [total]
+  );
 
   // modal
   const [open, setOpen] = useState(false);
@@ -155,14 +233,27 @@ export default function AdminInvoicesPage() {
     items: [{ description: "ค่าเช่า", qty: 1, unit_price: 0 }],
   });
 
-  const subtotal = useMemo(() => calcSubtotal(form.items as ItemForm[]), [form.items]);
-  const totalPrice = useMemo(() => Math.max(0, subtotal - Number(form.discount ?? 0)), [subtotal, form.discount]);
+  const [utilityForm, setUtilityForm] = useState<UtilityForm>({
+    water_units: 0,
+    water_unit_price: 0,
+    electric_units: 0,
+    electric_unit_price: 0,
+  });
 
-  /* ---------- PDF (Bearer) ---------- */
+  const subtotal = useMemo(
+    () => calcSubtotal(form.items as ItemForm[]),
+    [form.items]
+  );
+
+  const totalPrice = useMemo(
+    () => Math.max(0, subtotal - Number(form.discount ?? 0)),
+    [subtotal, form.discount]
+  );
+
+  /* ---------- PDF ---------- */
   const openPdf = async (id: number) => {
     try {
       const res = await adminInvoicesApi.downloadPdf(id);
-
       const blob = new Blob([res.data], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
 
@@ -233,6 +324,13 @@ export default function AdminInvoicesPage() {
     const now = new Date();
     const firstTenant = meta?.tenants?.[0]?.id ?? 0;
 
+    setUtilityForm({
+      water_units: 0,
+      water_unit_price: 0,
+      electric_units: 0,
+      electric_unit_price: 0,
+    });
+
     setForm({
       tenant_id: firstTenant,
       room_id: null,
@@ -256,7 +354,10 @@ export default function AdminInvoicesPage() {
     try {
       const data = await adminInvoicesApi.show(r.id);
 
-      const itemsRaw = Array.isArray((data as any)?.items) ? (data as any).items : [];
+      const itemsRaw = Array.isArray((data as any)?.items)
+        ? (data as any).items
+        : [];
+
       const items: ItemForm[] =
         itemsRaw.length > 0
           ? itemsRaw.map((it: any) => ({
@@ -266,16 +367,39 @@ export default function AdminInvoicesPage() {
             }))
           : [{ description: "ค่าเช่า", qty: 1, unit_price: 0 }];
 
+      const nextType = ((data as any)?.type ?? r.type ?? "rent") as InvoiceType;
+
       setForm({
         tenant_id: Number((data as any)?.tenant_id ?? r.tenant_id ?? 0),
-        room_id: (data as any)?.room_id ? Number((data as any).room_id) : r.room_id ?? null,
-        type: ((data as any)?.type ?? r.type ?? "rent") as InvoiceType,
-        period_month: Number((data as any)?.period_month ?? r.period_month ?? new Date().getMonth() + 1),
-        period_year: Number((data as any)?.period_year ?? r.period_year ?? new Date().getFullYear()),
+        room_id: (data as any)?.room_id
+          ? Number((data as any).room_id)
+          : r.room_id ?? null,
+        type: nextType,
+        period_month: Number(
+          (data as any)?.period_month ??
+            r.period_month ??
+            new Date().getMonth() + 1
+        ),
+        period_year: Number(
+          (data as any)?.period_year ??
+            r.period_year ??
+            new Date().getFullYear()
+        ),
         due_date: ((data as any)?.due_date ?? r.due_date ?? null) as any,
         discount: Number((data as any)?.discount ?? r.discount ?? 0),
         items,
       });
+
+      if (nextType === "utility") {
+        setUtilityForm(extractUtilityForm(items));
+      } else {
+        setUtilityForm({
+          water_units: 0,
+          water_unit_price: 0,
+          electric_units: 0,
+          electric_unit_price: 0,
+        });
+      }
     } catch (e) {
       console.error(e);
       setFormErr("โหลดข้อมูลใบแจ้งหนี้ไม่สำเร็จ");
@@ -285,15 +409,41 @@ export default function AdminInvoicesPage() {
   const validate = () => {
     if (!form.tenant_id) return "กรุณาเลือกผู้เช่า";
     if (!form.type) return "กรุณาเลือกประเภท";
-    if (!form.period_month || form.period_month < 1 || form.period_month > 12) return "เดือนรอบบิลไม่ถูกต้อง";
-    if (!form.period_year || form.period_year < 2000 || form.period_year > 2100) return "ปีรอบบิลไม่ถูกต้อง";
+    if (!form.period_month || form.period_month < 1 || form.period_month > 12)
+      return "เดือนรอบบิลไม่ถูกต้อง";
+    if (!form.period_year || form.period_year < 2000 || form.period_year > 2100)
+      return "ปีรอบบิลไม่ถูกต้อง";
     if (!form.items || form.items.length < 1) return "ต้องมีรายการอย่างน้อย 1 รายการ";
+
+    if (form.type === "utility") {
+      if (
+        Number(utilityForm.water_units) < 0 ||
+        Number(utilityForm.water_unit_price) < 0 ||
+        Number(utilityForm.electric_units) < 0 ||
+        Number(utilityForm.electric_unit_price) < 0
+      ) {
+        return "ค่าหน่วยน้ำ/ไฟต้องไม่ติดลบ";
+      }
+
+      const hasWater =
+        Number(utilityForm.water_units) > 0 &&
+        Number(utilityForm.water_unit_price) >= 0;
+
+      const hasElectric =
+        Number(utilityForm.electric_units) > 0 &&
+        Number(utilityForm.electric_unit_price) >= 0;
+
+      if (!hasWater && !hasElectric) {
+        return "กรุณากรอกข้อมูลค่าน้ำหรือค่าไฟอย่างน้อย 1 รายการ";
+      }
+    }
 
     for (const it of form.items as any[]) {
       if (!String(it.description || "").trim()) return "กรอกรายละเอียดรายการให้ครบ";
       if (Number(it.qty ?? 0) <= 0) return "จำนวนต้องมากกว่า 0";
       if (Number(it.unit_price ?? 0) < 0) return "ราคา/หน่วยต้องไม่ติดลบ";
     }
+
     return "";
   };
 
@@ -320,6 +470,7 @@ export default function AdminInvoicesPage() {
             unit_price: Number(it.unit_price),
           })),
         };
+
         await adminInvoicesApi.create(payload);
       } else if (editingId != null) {
         const payload: InvoiceUpdatePayload = {
@@ -331,6 +482,7 @@ export default function AdminInvoicesPage() {
             unit_price: Number(it.unit_price),
           })),
         };
+
         await adminInvoicesApi.update(editingId, payload);
       }
 
@@ -345,7 +497,9 @@ export default function AdminInvoicesPage() {
   };
 
   const removeInvoice = async (r: InvoiceRow) => {
-    const ok = window.confirm(`ยืนยันลบใบแจ้งหนี้ ${r.invoice_no ?? `#${r.id}`} ?`);
+    const ok = window.confirm(
+      `ยืนยันลบใบแจ้งหนี้ ${r.invoice_no ?? `#${r.id}`} ?`
+    );
     if (!ok) return;
 
     try {
@@ -362,9 +516,15 @@ export default function AdminInvoicesPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="text-xs font-extrabold tracking-wide text-slate-500">Admin</div>
-          <div className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">ใบแจ้งหนี้</div>
-          <div className="mt-1 text-sm text-slate-500">ค้นหา • กรองประเภท/สถานะ • สร้าง/แก้ไขรายการบิล</div>
+          <div className="text-xs font-extrabold tracking-wide text-slate-500">
+            Admin
+          </div>
+          <div className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+            ใบแจ้งหนี้
+          </div>
+          <div className="mt-1 text-sm text-slate-500">
+            ค้นหา • กรองประเภท/สถานะ • สร้าง/แก้ไขรายการบิล
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -437,7 +597,9 @@ export default function AdminInvoicesPage() {
       {/* Table */}
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         {loading && <div className="p-3 text-sm text-slate-500">Loading...</div>}
-        {!loading && rows.length === 0 && <div className="p-3 text-sm text-slate-500">ไม่พบข้อมูลใบแจ้งหนี้</div>}
+        {!loading && rows.length === 0 && (
+          <div className="p-3 text-sm text-slate-500">ไม่พบข้อมูลใบแจ้งหนี้</div>
+        )}
 
         {!loading && rows.length > 0 && (
           <div className="overflow-x-auto">
@@ -461,15 +623,25 @@ export default function AdminInvoicesPage() {
                   const isPaid = r.status === "paid";
 
                   return (
-                    <tr key={r.id} className="border-t border-slate-100 text-sm font-semibold text-slate-900">
-                      <td className="py-4 font-black">{r.invoice_no ?? `#${r.id}`}</td>
+                    <tr
+                      key={r.id}
+                      className="border-t border-slate-100 text-sm font-semibold text-slate-900"
+                    >
+                      <td className="py-4 font-black">
+                        {r.invoice_no ?? `#${r.id}`}
+                      </td>
                       <td className="py-4">{tenantName}</td>
                       <td className="py-4 font-black">{roomCode}</td>
                       <td className="py-4">{typeLabel(r.type as any)}</td>
-                      <td className="py-4 text-right font-black">฿ {money(r.total)}</td>
+                      <td className="py-4 text-right font-black">
+                        ฿ {money(r.total)}
+                      </td>
                       <td className="py-4 text-center">
                         <span
-                          className={["inline-flex rounded-full px-3 py-1 text-xs font-extrabold ring-1", badgeClass(r.status)].join(" ")}
+                          className={[
+                            "inline-flex rounded-full px-3 py-1 text-xs font-extrabold ring-1",
+                            badgeClass(r.status),
+                          ].join(" ")}
                         >
                           {statusLabel(r.status)}
                         </span>
@@ -477,7 +649,6 @@ export default function AdminInvoicesPage() {
 
                       <td className="py-4">
                         <div className="flex justify-end gap-2">
-                          {/* ✅ แก้แล้ว: โหลด PDF ผ่าน axios (Bearer) */}
                           <button
                             onClick={() => openPdf(r.id)}
                             className="rounded-xl px-3 py-1.5 text-xs font-extrabold ring-1 border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
@@ -536,7 +707,9 @@ export default function AdminInvoicesPage() {
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               className={[
                 "h-10 rounded-xl border px-4 text-sm font-extrabold",
-                page <= 1 ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400" : "border-slate-200 bg-white text-slate-900 hover:bg-slate-50",
+                page <= 1
+                  ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400"
+                  : "border-slate-200 bg-white text-slate-900 hover:bg-slate-50",
               ].join(" ")}
               type="button"
             >
@@ -548,7 +721,9 @@ export default function AdminInvoicesPage() {
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               className={[
                 "h-10 rounded-xl border px-4 text-sm font-extrabold",
-                page >= totalPages ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400" : "border-slate-200 bg-white text-slate-900 hover:bg-slate-50",
+                page >= totalPages
+                  ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400"
+                  : "border-slate-200 bg-white text-slate-900 hover:bg-slate-50",
               ].join(" ")}
               type="button"
             >
@@ -561,7 +736,11 @@ export default function AdminInvoicesPage() {
       {/* Modal Create/Edit */}
       <Modal
         open={open}
-        title={mode === "create" ? "สร้างใบแจ้งหนี้" : `แก้ไขใบแจ้งหนี้ #${editingId ?? ""}`}
+        title={
+          mode === "create"
+            ? "สร้างใบแจ้งหนี้"
+            : `แก้ไขใบแจ้งหนี้ #${editingId ?? ""}`
+        }
         onClose={() => setOpen(false)}
       >
         {formErr && (
@@ -570,20 +749,25 @@ export default function AdminInvoicesPage() {
           </div>
         )}
 
-        {/* --- ฟอร์มส่วนบน --- */}
+        {/* ฟอร์มส่วนบน */}
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <div className="mb-1 text-xs font-extrabold text-slate-600">ผู้เช่า</div>
+            <div className="mb-1 text-xs font-extrabold text-slate-600">
+              ผู้เช่า
+            </div>
             <select
               value={form.tenant_id}
-              onChange={(e) => setForm((x) => ({ ...x, tenant_id: Number(e.target.value) }))}
+              onChange={(e) =>
+                setForm((x) => ({ ...x, tenant_id: Number(e.target.value) }))
+              }
               className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold outline-none focus:ring-4 focus:ring-indigo-100"
               disabled={mode === "edit"}
             >
               <option value={0}>เลือกผู้เช่า</option>
               {(meta?.tenants ?? []).map((t) => (
                 <option key={t.id} value={t.id}>
-                  {t.user?.name ?? `Tenant #${t.id}`} {t.user?.email ? `(${t.user.email})` : ""}
+                  {t.user?.name ?? `Tenant #${t.id}`}{" "}
+                  {t.user?.email ? `(${t.user.email})` : ""}
                 </option>
               ))}
             </select>
@@ -593,7 +777,12 @@ export default function AdminInvoicesPage() {
             <div className="mb-1 text-xs font-extrabold text-slate-600">ห้อง</div>
             <select
               value={form.room_id ?? ""}
-              onChange={(e) => setForm((x) => ({ ...x, room_id: e.target.value ? Number(e.target.value) : null }))}
+              onChange={(e) =>
+                setForm((x) => ({
+                  ...x,
+                  room_id: e.target.value ? Number(e.target.value) : null,
+                }))
+              }
               className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold outline-none focus:ring-4 focus:ring-indigo-100"
               disabled={mode === "edit"}
             >
@@ -607,10 +796,42 @@ export default function AdminInvoicesPage() {
           </div>
 
           <div>
-            <div className="mb-1 text-xs font-extrabold text-slate-600">ประเภท</div>
+            <div className="mb-1 text-xs font-extrabold text-slate-600">
+              ประเภท
+            </div>
             <select
               value={form.type}
-              onChange={(e) => setForm((x) => ({ ...x, type: e.target.value as InvoiceType }))}
+              onChange={(e) => {
+                const nextType = e.target.value as InvoiceType;
+
+                if (nextType === "utility") {
+                  const utilityItems = buildUtilityItems(utilityForm);
+                  setForm((x) => ({
+                    ...x,
+                    type: nextType,
+                    items: utilityItems,
+                  }));
+                } else {
+                  setForm((x) => {
+                    const nextItems =
+                      nextType === "rent"
+                        ? [{ description: "ค่าเช่า", qty: 1, unit_price: 0 }]
+                        : nextType === "repair"
+                        ? [{ description: "ค่าซ่อมแซม", qty: 1, unit_price: 0 }]
+                        : nextType === "cleaning"
+                        ? [{ description: "ค่าทำความสะอาด", qty: 1, unit_price: 0 }]
+                        : x.items.length
+                        ? x.items
+                        : [{ description: "", qty: 1, unit_price: 0 }];
+
+                    return {
+                      ...x,
+                      type: nextType,
+                      items: nextItems,
+                    };
+                  });
+                }
+              }}
               className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold outline-none focus:ring-4 focus:ring-indigo-100"
               disabled={mode === "edit"}
             >
@@ -619,6 +840,7 @@ export default function AdminInvoicesPage() {
               <option value="repair">ซ่อมแซม</option>
               <option value="cleaning">ทำความสะอาด</option>
             </select>
+
             {mode === "edit" && (
               <div className="mt-1 text-xs font-semibold text-slate-500">
                 * แก้ไขไม่ได้ (backend update รองรับเฉพาะ due_date/discount/items)
@@ -627,156 +849,320 @@ export default function AdminInvoicesPage() {
           </div>
 
           <div>
-            <div className="mb-1 text-xs font-extrabold text-slate-600">วันครบกำหนด</div>
+            <div className="mb-1 text-xs font-extrabold text-slate-600">
+              วันครบกำหนด
+            </div>
             <input
               type="date"
               value={(form.due_date ? String(form.due_date) : "").slice(0, 10)}
-              onChange={(e) => setForm((x) => ({ ...x, due_date: e.target.value }))}
+              onChange={(e) =>
+                setForm((x) => ({ ...x, due_date: e.target.value }))
+              }
               className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm font-semibold outline-none focus:ring-4 focus:ring-indigo-100"
             />
           </div>
 
           <div>
-            <div className="mb-1 text-xs font-extrabold text-slate-600">เดือนรอบบิล</div>
+            <div className="mb-1 text-xs font-extrabold text-slate-600">
+              เดือนรอบบิล
+            </div>
             <input
               type="number"
               min={1}
               max={12}
               value={form.period_month}
-              onChange={(e) => setForm((x) => ({ ...x, period_month: Number(e.target.value) }))}
+              onChange={(e) =>
+                setForm((x) => ({
+                  ...x,
+                  period_month: Number(e.target.value),
+                }))
+              }
               className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm font-semibold outline-none focus:ring-4 focus:ring-indigo-100"
               disabled={mode === "edit"}
             />
           </div>
 
           <div>
-            <div className="mb-1 text-xs font-extrabold text-slate-600">ปีรอบบิล</div>
+            <div className="mb-1 text-xs font-extrabold text-slate-600">
+              ปีรอบบิล
+            </div>
             <input
               type="number"
               min={2000}
               max={2100}
               value={form.period_year}
-              onChange={(e) => setForm((x) => ({ ...x, period_year: Number(e.target.value) }))}
+              onChange={(e) =>
+                setForm((x) => ({
+                  ...x,
+                  period_year: Number(e.target.value),
+                }))
+              }
               className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm font-semibold outline-none focus:ring-4 focus:ring-indigo-100"
               disabled={mode === "edit"}
             />
           </div>
 
           <div className="sm:col-span-2">
-            <div className="mb-1 text-xs font-extrabold text-slate-600">ส่วนลด</div>
+            <div className="mb-1 text-xs font-extrabold text-slate-600">
+              ส่วนลด
+            </div>
             <input
               type="number"
               min={0}
               value={Number(form.discount ?? 0)}
-              onChange={(e) => setForm((x) => ({ ...x, discount: Number(e.target.value) }))}
+              onChange={(e) =>
+                setForm((x) => ({
+                  ...x,
+                  discount: Number(e.target.value),
+                }))
+              }
               className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm font-semibold outline-none focus:ring-4 focus:ring-indigo-100"
             />
           </div>
         </div>
 
+        {/* Utility form */}
+        {form.type === "utility" && (
+          <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50/70 p-4">
+            <div className="mb-3 text-sm font-black text-slate-900">
+              ข้อมูลค่าน้ำ / ค่าไฟ
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <div className="mb-1 text-xs font-extrabold text-slate-600">
+                  จำนวนหน่วยน้ำ
+                </div>
+                <input
+                  type="number"
+                  min={0}
+                  step="1"
+                  value={utilityForm.water_units}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    const next = { ...utilityForm, water_units: v };
+                    setUtilityForm(next);
+                    setForm((x) => ({ ...x, items: buildUtilityItems(next) }));
+                  }}
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold outline-none focus:ring-4 focus:ring-sky-100"
+                  placeholder="เช่น 12"
+                />
+              </div>
+
+              <div>
+                <div className="mb-1 text-xs font-extrabold text-slate-600">
+                  ราคาต่อหน่วยน้ำ
+                </div>
+                <input
+                  type="number"
+                  min={0}
+                  step="1"
+                  value={utilityForm.water_unit_price}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    const next = { ...utilityForm, water_unit_price: v };
+                    setUtilityForm(next);
+                    setForm((x) => ({ ...x, items: buildUtilityItems(next) }));
+                  }}
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold outline-none focus:ring-4 focus:ring-sky-100"
+                  placeholder="เช่น 18"
+                />
+              </div>
+
+              <div>
+                <div className="mb-1 text-xs font-extrabold text-slate-600">
+                  จำนวนหน่วยไฟฟ้า
+                </div>
+                <input
+                  type="number"
+                  min={0}
+                  step="1"
+                  value={utilityForm.electric_units}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    const next = { ...utilityForm, electric_units: v };
+                    setUtilityForm(next);
+                    setForm((x) => ({ ...x, items: buildUtilityItems(next) }));
+                  }}
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold outline-none focus:ring-4 focus:ring-sky-100"
+                  placeholder="เช่น 85"
+                />
+              </div>
+
+              <div>
+                <div className="mb-1 text-xs font-extrabold text-slate-600">
+                  ราคาต่อหน่วยไฟฟ้า
+                </div>
+                <input
+                  type="number"
+                  min={0}
+                  step="1"
+                  value={utilityForm.electric_unit_price}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    const next = { ...utilityForm, electric_unit_price: v };
+                    setUtilityForm(next);
+                    setForm((x) => ({ ...x, items: buildUtilityItems(next) }));
+                  }}
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold outline-none focus:ring-4 focus:ring-sky-100"
+                  placeholder="เช่น 7"
+                />
+              </div>
+            </div>
+
+            <div className="mt-3 rounded-xl bg-white px-3 py-2 text-xs font-semibold text-slate-600 ring-1 ring-sky-100">
+              ระบบจะสร้างรายการ “ค่าน้ำ” และ “ค่าไฟฟ้า” ให้อัตโนมัติจากข้อมูลด้านบน
+            </div>
+          </div>
+        )}
+
         {/* Items */}
         <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
           <div className="flex items-center justify-between">
             <div className="text-sm font-black text-slate-900">รายการ</div>
-            <button
-              type="button"
-              onClick={() =>
-                setForm((x) => ({
-                  ...x,
-                  items: [...x.items, { description: "", qty: 1, unit_price: 0 }],
-                }))
-              }
-              className="rounded-xl bg-indigo-100 px-3 py-1.5 text-xs font-extrabold text-indigo-700 hover:bg-indigo-200"
-            >
-              + เพิ่มรายการ
-            </button>
+
+            {form.type !== "utility" && (
+              <button
+                type="button"
+                onClick={() =>
+                  setForm((x) => ({
+                    ...x,
+                    items: [...x.items, { description: "", qty: 1, unit_price: 0 }],
+                  }))
+                }
+                className="rounded-xl bg-indigo-100 px-3 py-1.5 text-xs font-extrabold text-indigo-700 hover:bg-indigo-200"
+              >
+                + เพิ่มรายการ
+              </button>
+            )}
           </div>
 
           <div className="mt-3 space-y-3">
             {(form.items as ItemForm[]).map((it, idx) => (
-              <div key={idx} className="grid gap-2 sm:grid-cols-[1fr_120px_160px_80px] items-end">
+              <div
+                key={idx}
+                className={`grid gap-2 items-end ${
+                  form.type === "utility"
+                    ? "sm:grid-cols-[1fr_120px_160px]"
+                    : "sm:grid-cols-[1fr_120px_160px_80px]"
+                }`}
+              >
                 <div>
-                  <div className="mb-1 text-xs font-extrabold text-slate-600">รายละเอียด</div>
+                  <div className="mb-1 text-xs font-extrabold text-slate-600">
+                    รายละเอียด
+                  </div>
                   <input
                     value={it.description}
+                    disabled={form.type === "utility"}
                     onChange={(e) => {
                       const v = e.target.value;
                       setForm((x) => {
-                        const items = [...x.items] as ItemForm[];
+                        const items = [...(x.items as ItemForm[])];
                         items[idx] = { ...items[idx], description: v };
                         return { ...x, items };
                       });
                     }}
-                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold outline-none focus:ring-4 focus:ring-indigo-100"
+                    className={[
+                      "h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold outline-none focus:ring-4 focus:ring-indigo-100",
+                      form.type === "utility"
+                        ? "cursor-not-allowed bg-slate-100 text-slate-500"
+                        : "",
+                    ].join(" ")}
                   />
                 </div>
 
                 <div>
-                  <div className="mb-1 text-xs font-extrabold text-slate-600">จำนวน</div>
+                  <div className="mb-1 text-xs font-extrabold text-slate-600">
+                    จำนวน
+                  </div>
                   <input
                     type="number"
                     min={0.01}
-                    step="0.01"
+                    step="1"
                     value={it.qty}
                     onChange={(e) => {
                       const v = Number(e.target.value);
                       setForm((x) => {
-                        const items = [...x.items] as ItemForm[];
+                        const items = [...(x.items as ItemForm[])];
                         items[idx] = { ...items[idx], qty: v };
                         return { ...x, items };
                       });
+
+                      if (form.type === "utility") {
+                        if (String(it.description).includes("น้ำ")) {
+                          setUtilityForm((u) => ({ ...u, water_units: v }));
+                        } else if (String(it.description).includes("ไฟ")) {
+                          setUtilityForm((u) => ({ ...u, electric_units: v }));
+                        }
+                      }
                     }}
                     className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold outline-none focus:ring-4 focus:ring-indigo-100"
                   />
                 </div>
 
                 <div>
-                  <div className="mb-1 text-xs font-extrabold text-slate-600">ราคา/หน่วย</div>
+                  <div className="mb-1 text-xs font-extrabold text-slate-600">
+                    ราคา/หน่วย
+                  </div>
                   <input
                     type="number"
                     min={0}
-                    step="0.01"
+                    step="1"
                     value={it.unit_price}
                     onChange={(e) => {
                       const v = Number(e.target.value);
                       setForm((x) => {
-                        const items = [...x.items] as ItemForm[];
+                        const items = [...(x.items as ItemForm[])];
                         items[idx] = { ...items[idx], unit_price: v };
                         return { ...x, items };
                       });
+
+                      if (form.type === "utility") {
+                        if (String(it.description).includes("น้ำ")) {
+                          setUtilityForm((u) => ({ ...u, water_unit_price: v }));
+                        } else if (String(it.description).includes("ไฟ")) {
+                          setUtilityForm((u) => ({ ...u, electric_unit_price: v }));
+                        }
+                      }
                     }}
                     className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold outline-none focus:ring-4 focus:ring-indigo-100"
                   />
                 </div>
 
-                <button
-                  type="button"
-                  disabled={(form.items as ItemForm[]).length <= 1}
-                  onClick={() =>
-                    setForm((x) => ({
-                      ...x,
-                      items: (x.items as ItemForm[]).filter((_, i) => i !== idx),
-                    }))
-                  }
-                  className={[
-                    "h-11 rounded-xl px-3 text-xs font-extrabold",
-                    (form.items as ItemForm[]).length <= 1
-                      ? "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400"
-                      : "border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100",
-                  ].join(" ")}
-                >
-                  ลบ
-                </button>
+                {form.type !== "utility" && (
+                  <button
+                    type="button"
+                    disabled={(form.items as ItemForm[]).length <= 1}
+                    onClick={() =>
+                      setForm((x) => ({
+                        ...x,
+                        items: (x.items as ItemForm[]).filter((_, i) => i !== idx),
+                      }))
+                    }
+                    className={[
+                      "h-11 rounded-xl px-3 text-xs font-extrabold",
+                      (form.items as ItemForm[]).length <= 1
+                        ? "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400"
+                        : "border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100",
+                    ].join(" ")}
+                  >
+                    ลบ
+                  </button>
+                )}
               </div>
             ))}
           </div>
 
-          <div className="mt-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between text-sm font-semibold">
+          <div className="mt-3 flex flex-col gap-1 text-sm font-semibold sm:flex-row sm:items-center sm:justify-between">
             <div className="text-slate-600">
-              Subtotal: <span className="font-black text-slate-900">฿ {money(subtotal)}</span>
+              Subtotal:{" "}
+              <span className="font-black text-slate-900">฿ {money(subtotal)}</span>
             </div>
             <div className="text-slate-600">
-              Total: <span className="font-black text-indigo-700">฿ {money(totalPrice)}</span>
+              Total:{" "}
+              <span className="font-black text-indigo-700">
+                ฿ {money(totalPrice)}
+              </span>
             </div>
           </div>
         </div>

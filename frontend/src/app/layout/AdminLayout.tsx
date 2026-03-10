@@ -11,6 +11,8 @@ const NAV: NavItem[] = [
   { label: "ใบแจ้งหนี้", to: "/admin/invoices" },
   { label: "แจ้งซ่อม", to: "/admin/repairs" },
   { label: "ตรวจสอบชำระเงิน", to: "/admin/payments" },
+  { label: "พัสดุ", to: "/admin/parcels" },
+  { label: "แจ้งประชาสัมพันธ์", to: "/admin/announcements" },
   { label: "โปรไฟล์", to: "/admin/profile" },
 ];
 
@@ -31,7 +33,7 @@ function Sidebar({
     <div className="h-full rounded-2xl bg-blue-600 p-4 shadow-lg">
       {/* Brand */}
       <div className="mb-6">
-        <div className="text-xl font-black tracking-tight text-white">Admin</div>
+        <div className="text-xl font-black tracking-tight text-white">แอดมิน</div>
         <div className="mt-0.5 text-xs font-semibold text-blue-100">
           ระบบจัดการหอพัก
         </div>
@@ -66,13 +68,6 @@ function Sidebar({
         ))}
       </nav>
 
-      {/* Current page */}
-      <div className="mt-6 rounded-xl bg-white/10 p-3">
-        <div className="text-xs font-bold text-blue-100">คุณอยู่หน้า</div>
-        <div className="mt-1 text-sm font-black text-white">
-          {locationPathname}
-        </div>
-      </div>
 
       {/* Logout */}
       <div className="mt-6">
@@ -84,7 +79,7 @@ function Sidebar({
           )}
           onClick={onLogout}
         >
-          Logout
+          ออกจากระบบ
         </button>
       </div>
     </div>
@@ -156,7 +151,7 @@ export default function AdminLayout() {
           </button>
 
           <div className="text-right">
-            <div className="text-xs font-extrabold text-slate-500">Admin</div>
+            <div className="text-xs font-extrabold text-slate-500">แอดมิน</div>
             <div className="text-sm font-black text-slate-900">
               {location.pathname}
             </div>
