@@ -29,7 +29,15 @@ export default function ProtectedRoute({ children }: Props) {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div style={{ padding: 24 }}>Loading...</div>;
+  if (loading) {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-slate-50">
+      <div className="rounded-2xl bg-white px-5 py-3 text-slate-500 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+        กำลังตรวจสอบสิทธิ์...
+      </div>
+    </div>
+  );
+}
 
   if (!ok) {
     const isAdmin = loc.pathname.startsWith("/admin");
