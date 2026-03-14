@@ -8,7 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-// ✅ dompdf (ต้องติดตั้ง barryvdh/laravel-dompdf)
+// dompdf (ต้องติดตั้ง barryvdh/laravel-dompdf)
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoiceController extends Controller
@@ -180,39 +180,42 @@ class InvoiceController extends Controller
     }
 
     // =========================================================
-    // ✅ PDF: เปิดดู/พิมพ์ใบแจ้งหนี้ + QR จ่ายเงิน
+    // PDF: เปิดดู/พิมพ์ใบแจ้งหนี้ + QR จ่ายเงิน
     // URL: GET /admin/invoices/{invoice}/pdf
     // =========================================================
     public function pdf(Request $request, Invoice $invoice)
     {
         $invoice->load(['tenant.user', 'room', 'items']);
 
-        // 1) QR รูปใน public/qr-code.jpg (ของเดิมใช้ต่อได้)
+        $fontRegularPath = storage_path('fonts/NotoSansThai-Regular.ttf');
+        $fontBoldPath = storage_path('fonts/NotoSansThai-Bold.ttf');
+
+        $fontRegularB64 = is_file($fontRegularPath)
+            ? base64_encode(file_get_contents($fontRegularPath))
+            : '';
+
+        $fontBoldB64 = is_file($fontBoldPath)
+            ? base64_encode(file_get_contents($fontBoldPath))
+            : $fontRegularB64;
+
         $qrPath = public_path('qr-code.jpg');
         $qrDataUri = null;
+
         if (is_file($qrPath)) {
             $ext = strtolower(pathinfo($qrPath, PATHINFO_EXTENSION));
             $mime = $ext === 'png' ? 'image/png' : 'image/jpeg';
             $qrDataUri = "data:{$mime};base64," . base64_encode(file_get_contents($qrPath));
         }
 
-        // 2) ฟอนต์ไทย (ตาม blade ของคุณ)
-        // วางไฟล์ไว้: public/fonts/THSarabunNew.ttf และ THSarabunNew Bold.ttf (ถ้ามี)
-        $sarabunPath = public_path('fonts/THSarabunNew.ttf');
-        $sarabunBoldPath = public_path('fonts/THSarabunNew Bold.ttf');
-
-        $sarabunB64 = is_file($sarabunPath) ? base64_encode(file_get_contents($sarabunPath)) : '';
-        $sarabunBoldB64 = is_file($sarabunBoldPath) ? base64_encode(file_get_contents($sarabunBoldPath)) : $sarabunB64;
-
         $pdf = Pdf::loadView('pdf.invoice', [
             'invoice' => $invoice,
             'qrDataUri' => $qrDataUri,
-            'sarabunB64' => $sarabunB64,
-            'sarabunBoldB64' => $sarabunBoldB64,
-        ])->setPaper('a4');
+            'fontRegularB64' => $fontRegularB64,
+            'fontBoldB64' => $fontBoldB64,
+        ])->setPaper('a4', 'portrait');
 
-        // query ?download=1 จะดาวน์โหลดแทน stream
         $filename = "invoice-{$invoice->invoice_no}.pdf";
+
         if ($request->boolean('download')) {
             return $pdf->download($filename);
         }

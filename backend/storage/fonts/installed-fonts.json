@@ -2,5 +2,9 @@
     "thsarabun": {
         "normal": "\/var\/www\/html\/storage\/fonts\/thsarabun_normal_1bb912affbd37b489615497db01284d5",
         "bold": "thsarabun_bold_1bb912affbd37b489615497db01284d5"
+    },
+    "pdfthai": {
+        "normal": "\/var\/www\/html\/storage\/fonts\/pdfthai_normal_3c6111eb64c60bd8ecb46815c7a3c3a3",
+        "bold": "pdfthai_bold_93baea197bb3794e29a1f85db8b2f66c"
     }
 }

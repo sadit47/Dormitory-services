@@ -17,7 +17,6 @@ use App\Http\Controllers\Api\V1\Tenant\DashboardController as TenantDashboardCon
 use App\Http\Controllers\Api\V1\Tenant\ProfileController as TenantProfileController;
 
 use App\Http\Controllers\Api\V1\HealthController;
-
 use App\Http\Controllers\Api\V1\FileController;
 
 use App\Http\Controllers\Api\V1\Admin\ParcelController as AdminParcelController;
@@ -31,10 +30,13 @@ Route::prefix('v1')->group(function () {
 
     // Auth
     Route::post('/auth/login', [AuthController::class, 'login']);
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/files/{file}', [FileController::class, 'show'])->name('files.show');
+
+        // Notifications
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::post('/notifications/{notification}/read', [NotificationController::class, 'read']);
         Route::post('/notifications/read-all', [NotificationController::class, 'readAll']);
@@ -42,7 +44,6 @@ Route::prefix('v1')->group(function () {
 
     // Admin APIs
     Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
-
         // Dashboard
         Route::get('/admin/dashboard/summary', [AdminDashboardController::class, 'summary']);
 
@@ -66,8 +67,6 @@ Route::prefix('v1')->group(function () {
         Route::post('/admin/tenants', [AdminTenantController::class, 'store']);
         Route::put('/admin/tenants/{tenant}', [AdminTenantController::class, 'update']);
         Route::delete('/admin/tenants/{tenant}', [AdminTenantController::class, 'destroy']);
-
-        // ✅ เพิ่มตาม requirement
         Route::post('/admin/tenants/{tenant}/reset-password', [AdminTenantController::class, 'resetPassword']);
         Route::post('/admin/tenants/{tenant}/move-room', [AdminTenantController::class, 'moveRoom']);
 
@@ -94,7 +93,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/admin/parcels', [AdminParcelController::class, 'index']);
         Route::get('/admin/parcels/{parcel}', [AdminParcelController::class, 'show']);
         Route::post('/admin/parcels', [AdminParcelController::class, 'store']);
-        Route::put('/admin/parcels/{parcel}', [AdminParcelController::class, 'update']);
+
+        // ✅ เปลี่ยนจาก PUT เป็น POST เพื่อให้ multipart/form-data ทำงานนิ่ง
+        Route::post('/admin/parcels/{parcel}', [AdminParcelController::class, 'update']);
+
         Route::post('/admin/parcels/{parcel}/pickup', [AdminParcelController::class, 'pickup']);
         Route::delete('/admin/parcels/{parcel}', [AdminParcelController::class, 'destroy']);
 
@@ -102,8 +104,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/admin/announcements', [AdminAnnouncementController::class, 'index']);
         Route::get('/admin/announcements/{announcement}', [AdminAnnouncementController::class, 'show']);
         Route::post('/admin/announcements', [AdminAnnouncementController::class, 'store']);
-        Route::put('/admin/announcements/{announcement}', [AdminAnnouncementController::class, 'update']);
-        
+
+        // ✅ เปลี่ยนจาก PUT เป็น POST เพื่อให้ multipart/form-data ทำงานนิ่ง
+        Route::post('/admin/announcements/{announcement}', [AdminAnnouncementController::class, 'update']);
+
         Route::post('/admin/announcements/{announcement}/publish', [AdminAnnouncementController::class, 'publish']);
         Route::post('/admin/announcements/{announcement}/expire', [AdminAnnouncementController::class, 'expire']);
         Route::delete('/admin/announcements/{announcement}', [AdminAnnouncementController::class, 'destroy']);
@@ -111,9 +115,6 @@ Route::prefix('v1')->group(function () {
 
     // Tenant APIs
     Route::middleware(['auth:sanctum', 'role:tenant'])->group(function () {
-
-        
-
         // Dashboard
         Route::get('/tenant/dashboard/summary', [TenantDashboardController::class, 'summary']);
 

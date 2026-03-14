@@ -152,6 +152,7 @@
                     {
                         "name": "q",
                         "in": "query",
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -159,6 +160,7 @@
                     {
                         "name": "status",
                         "in": "query",
+                        "required": false,
                         "schema": {
                             "type": "string",
                             "enum": [
@@ -171,6 +173,7 @@
                     {
                         "name": "type",
                         "in": "query",
+                        "required": false,
                         "schema": {
                             "type": "string",
                             "enum": [
@@ -183,6 +186,7 @@
                     {
                         "name": "per_page",
                         "in": "query",
+                        "required": false,
                         "schema": {
                             "type": "integer",
                             "example": 10
@@ -218,10 +222,13 @@
                                 ],
                                 "properties": {
                                     "title": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "maxLength": 190,
+                                        "example": "แจ้งปิดน้ำชั่วคราว"
                                     },
                                     "content": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "ขอแจ้งปิดน้ำชั่วคราวในวันพรุ่งนี้"
                                     },
                                     "type": {
                                         "type": "string",
@@ -229,7 +236,8 @@
                                             "general",
                                             "urgent",
                                             "maintenance"
-                                        ]
+                                        ],
+                                        "example": "maintenance"
                                     },
                                     "status": {
                                         "type": "string",
@@ -237,18 +245,33 @@
                                             "draft",
                                             "published",
                                             "expired"
-                                        ]
+                                        ],
+                                        "example": "draft",
+                                        "nullable": true
                                     },
                                     "is_pinned": {
-                                        "type": "boolean"
+                                        "type": "boolean",
+                                        "example": true,
+                                        "nullable": true
                                     },
                                     "starts_at": {
                                         "type": "string",
-                                        "format": "date-time"
+                                        "format": "date-time",
+                                        "example": "2026-03-10 09:00:00",
+                                        "nullable": true
                                     },
                                     "ends_at": {
                                         "type": "string",
-                                        "format": "date-time"
+                                        "format": "date-time",
+                                        "example": "2026-03-10 12:00:00",
+                                        "nullable": true
+                                    },
+                                    "images[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -259,6 +282,9 @@
                 "responses": {
                     "201": {
                         "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation error"
                     }
                 },
                 "security": [
@@ -296,12 +322,13 @@
                     }
                 ]
             },
-            "put": {
+            "post": {
                 "tags": [
                     "Admin Announcements"
                 ],
                 "summary": "Update announcement",
-                "operationId": "d62e4005af0db9dcf6090ac829460edb",
+                "description": "ใช้แก้ title, content, type, status, is_pinned, starts_at, ends_at และเพิ่มรูปเท่านั้น ส่วน publish/expire ใช้ action แยก",
+                "operationId": "3d501d5fd69831cfaa6d2d3fc976d191",
                 "parameters": [
                     {
                         "name": "announcement",
@@ -319,25 +346,57 @@
                             "schema": {
                                 "properties": {
                                     "title": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "maxLength": 190,
+                                        "example": "อัปเดตหัวข้อ"
                                     },
                                     "content": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "อัปเดตเนื้อหา"
                                     },
                                     "type": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "enum": [
+                                            "general",
+                                            "urgent",
+                                            "maintenance"
+                                        ],
+                                        "example": "general",
+                                        "nullable": true
                                     },
                                     "status": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "enum": [
+                                            "draft",
+                                            "published",
+                                            "expired"
+                                        ],
+                                        "example": "published",
+                                        "nullable": true
                                     },
                                     "is_pinned": {
-                                        "type": "boolean"
+                                        "type": "boolean",
+                                        "example": false,
+                                        "nullable": true
                                     },
                                     "starts_at": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-03-10 09:00:00",
+                                        "nullable": true
                                     },
                                     "ends_at": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-03-11 18:00:00",
+                                        "nullable": true
+                                    },
+                                    "images[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -348,6 +407,9 @@
                 "responses": {
                     "200": {
                         "description": "Updated"
+                    },
+                    "422": {
+                        "description": "Validation error"
                     }
                 },
                 "security": [
@@ -875,6 +937,7 @@
                     {
                         "name": "q",
                         "in": "query",
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -882,6 +945,7 @@
                     {
                         "name": "status",
                         "in": "query",
+                        "required": false,
                         "schema": {
                             "type": "string",
                             "enum": [
@@ -894,6 +958,7 @@
                     {
                         "name": "per_page",
                         "in": "query",
+                        "required": false,
                         "schema": {
                             "type": "integer",
                             "example": 10
@@ -932,19 +997,23 @@
                                     },
                                     "tracking_no": {
                                         "type": "string",
-                                        "example": "TH123456789"
+                                        "example": "TH123456789",
+                                        "nullable": true
                                     },
                                     "courier": {
                                         "type": "string",
-                                        "example": "Kerry"
+                                        "example": "Kerry",
+                                        "nullable": true
                                     },
                                     "sender_name": {
                                         "type": "string",
-                                        "example": "Shopee"
+                                        "example": "Shopee",
+                                        "nullable": true
                                     },
                                     "note": {
                                         "type": "string",
-                                        "example": "วางไว้ที่เคาน์เตอร์"
+                                        "example": "วางไว้ที่เคาน์เตอร์",
+                                        "nullable": true
                                     },
                                     "images[]": {
                                         "type": "array",
@@ -1002,13 +1071,13 @@
                     }
                 ]
             },
-            "put": {
+            "post": {
                 "tags": [
                     "Admin Parcels"
                 ],
                 "summary": "Update parcel information",
-                "description": "ใช้สำหรับแก้ tracking_no, courier, sender_name, note และเพิ่มรูปเท่านั้น ไม่ใช้เปลี่ยนสถานะรับพัสดุ",
-                "operationId": "a6892e3aa84f24af3c5f62d45c47f9e9",
+                "description": "ใช้แก้ tracking_no, courier, sender_name, note และเพิ่มรูปเท่านั้น ถ้าจะรับพัสดุให้ใช้ /admin/parcels/{parcel}/pickup",
+                "operationId": "4b01e4d820e391d302d20f642abfad70",
                 "parameters": [
                     {
                         "name": "parcel",
@@ -1027,19 +1096,23 @@
                                 "properties": {
                                     "tracking_no": {
                                         "type": "string",
-                                        "example": "TH123456789"
+                                        "example": "TH123456789",
+                                        "nullable": true
                                     },
                                     "courier": {
                                         "type": "string",
-                                        "example": "Kerry"
+                                        "example": "Kerry",
+                                        "nullable": true
                                     },
                                     "sender_name": {
                                         "type": "string",
-                                        "example": "Shopee"
+                                        "example": "Shopee",
+                                        "nullable": true
                                     },
                                     "note": {
                                         "type": "string",
-                                        "example": "วางไว้ที่เคาน์เตอร์"
+                                        "example": "วางไว้ที่เคาน์เตอร์",
+                                        "nullable": true
                                     },
                                     "images[]": {
                                         "type": "array",

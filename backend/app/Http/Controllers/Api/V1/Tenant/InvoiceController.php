@@ -78,38 +78,41 @@ class InvoiceController extends Controller
         $u = $request->user();
         $tenant = Tenant::where('user_id', $u->id)->firstOrFail();
 
-        // ✅ ป้องกัน tenant โหลดใบของคนอื่น
         if ((int) $invoice->tenant_id !== (int) $tenant->id) {
             return apiResponse(null, 'Forbidden', 403);
         }
 
-        // โหลดข้อมูลเหมือนฝั่ง admin
         $invoice->load(['tenant.user', 'room', 'items']);
 
-        // 1) QR รูปใน public/qr-code.jpg
+        $fontRegularPath = storage_path('fonts/NotoSansThai-Regular.ttf');
+        $fontBoldPath = storage_path('fonts/NotoSansThai-Bold.ttf');
+
+        $fontRegularB64 = is_file($fontRegularPath)
+            ? base64_encode(file_get_contents($fontRegularPath))
+            : '';
+
+        $fontBoldB64 = is_file($fontBoldPath)
+            ? base64_encode(file_get_contents($fontBoldPath))
+            : $fontRegularB64;
+
         $qrPath = public_path('qr-code.jpg');
         $qrDataUri = null;
+
         if (is_file($qrPath)) {
             $ext = strtolower(pathinfo($qrPath, PATHINFO_EXTENSION));
             $mime = $ext === 'png' ? 'image/png' : 'image/jpeg';
             $qrDataUri = "data:{$mime};base64," . base64_encode(file_get_contents($qrPath));
         }
 
-        // 2) ฟอนต์ไทย
-        $sarabunPath = public_path('fonts/THSarabunNew.ttf');
-        $sarabunBoldPath = public_path('fonts/THSarabunNew Bold.ttf');
-
-        $sarabunB64 = is_file($sarabunPath) ? base64_encode(file_get_contents($sarabunPath)) : '';
-        $sarabunBoldB64 = is_file($sarabunBoldPath) ? base64_encode(file_get_contents($sarabunBoldPath)) : $sarabunB64;
-
         $pdf = Pdf::loadView('pdf.invoice', [
             'invoice' => $invoice,
             'qrDataUri' => $qrDataUri,
-            'sarabunB64' => $sarabunB64,
-            'sarabunBoldB64' => $sarabunBoldB64,
-        ])->setPaper('a4');
+            'fontRegularB64' => $fontRegularB64,
+            'fontBoldB64' => $fontBoldB64,
+        ])->setPaper('a4', 'portrait');
 
         $filename = "invoice-{$invoice->invoice_no}.pdf";
+
         if ($request->boolean('download')) {
             return $pdf->download($filename);
         }

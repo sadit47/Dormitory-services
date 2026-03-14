@@ -87,7 +87,7 @@ function Modal({
 }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-35">
       <div className="absolute inset-0 bg-slate-900/40" onClick={onClose} />
       <div className="absolute inset-0 flex items-center justify-center p-4">
         <div className="w-full max-w-4xl rounded-2xl bg-white shadow-xl ring-1 ring-slate-200">
@@ -253,7 +253,7 @@ export default function AdminRepairsPage() {
   };
 
   /* ===================== Image Tile ===================== */
-  function ImageTile({ f, idx }: { f: RepairFile; idx: number }) {
+  function ImageTile({ f}: { f: RepairFile; idx: number }) {
     const [src, setSrc] = useState<string>("");
     const [err, setErr] = useState<string>("");
 
@@ -280,7 +280,7 @@ export default function AdminRepairsPage() {
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [f?.id, f?.url]);
 
-    const title = f.name ?? f.path ?? `file-${idx}`;
+    
 
     // ลิงก์เปิดแท็บใหม่: ถ้าเป็น objectURL ก็เปิดได้, ถ้าเป็น url ก็เปิดได้
     const href = src || "#";
@@ -296,7 +296,7 @@ export default function AdminRepairsPage() {
           {src ? (
             <img
               src={src}
-              alt={title}
+              
               className="h-full w-full object-cover transition group-hover:scale-[1.03]"
             />
           ) : (
@@ -305,7 +305,7 @@ export default function AdminRepairsPage() {
             </div>
           )}
         </div>
-        <div className="p-2 text-xs font-semibold text-slate-700 line-clamp-1">{title}</div>
+        
       </a>
     );
   }

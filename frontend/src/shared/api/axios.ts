@@ -1,13 +1,13 @@
 import axios from "axios";
 import { storage } from "@/shared/utils/storage";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9000/api/v1";
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8088/api/v1";
 
 export const api = axios.create({
   baseURL,
   withCredentials: false,
   headers: {
-    Accept: "application/json", // ✅ สำคัญ: กัน Laravel redirect แล้วส่ง HTML
+    Accept: "application/json", //  กัน Laravel redirect แล้วส่ง HTML
   },
 });
 
@@ -18,7 +18,7 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
-  // ✅ บังคับให้ API ตอบ JSON
+  //  API ตอบ JSON
   config.headers = config.headers ?? {};
   config.headers.Accept = "application/json";
 

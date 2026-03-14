@@ -12,9 +12,9 @@ use OpenApi\Attributes as OA;
     summary: 'List parcels',
     security: [['bearerAuth' => []]],
     parameters: [
-        new OA\Parameter(name: 'q', in: 'query', schema: new OA\Schema(type: 'string')),
-        new OA\Parameter(name: 'status', in: 'query', schema: new OA\Schema(type: 'string', enum: ['arrived','picked_up','cancelled'])),
-        new OA\Parameter(name: 'per_page', in: 'query', schema: new OA\Schema(type: 'integer', example: 10)),
+        new OA\Parameter(name: 'q', in: 'query', required: false, schema: new OA\Schema(type: 'string')),
+        new OA\Parameter(name: 'status', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['arrived', 'picked_up', 'cancelled'])),
+        new OA\Parameter(name: 'per_page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', example: 10)),
     ],
     responses: [
         new OA\Response(response: 200, description: 'Parcel list')
@@ -47,10 +47,10 @@ use OpenApi\Attributes as OA;
                 required: ['tenant_id'],
                 properties: [
                     new OA\Property(property: 'tenant_id', type: 'integer', example: 10),
-                    new OA\Property(property: 'tracking_no', type: 'string', example: 'TH123456789'),
-                    new OA\Property(property: 'courier', type: 'string', example: 'Kerry'),
-                    new OA\Property(property: 'sender_name', type: 'string', example: 'Shopee'),
-                    new OA\Property(property: 'note', type: 'string', example: 'วางไว้ที่เคาน์เตอร์'),
+                    new OA\Property(property: 'tracking_no', type: 'string', nullable: true, example: 'TH123456789'),
+                    new OA\Property(property: 'courier', type: 'string', nullable: true, example: 'Kerry'),
+                    new OA\Property(property: 'sender_name', type: 'string', nullable: true, example: 'Shopee'),
+                    new OA\Property(property: 'note', type: 'string', nullable: true, example: 'วางไว้ที่เคาน์เตอร์'),
                     new OA\Property(
                         property: 'images[]',
                         type: 'array',
@@ -67,11 +67,11 @@ use OpenApi\Attributes as OA;
     ]
 )]
 
-#[OA\Put(
+#[OA\Post(
     path: '/admin/parcels/{parcel}',
     tags: ['Admin Parcels'],
     summary: 'Update parcel information',
-    description: 'ใช้สำหรับแก้ tracking_no, courier, sender_name, note และเพิ่มรูปเท่านั้น ไม่ใช้เปลี่ยนสถานะรับพัสดุ',
+    description: 'ใช้แก้ tracking_no, courier, sender_name, note และเพิ่มรูปเท่านั้น ถ้าจะรับพัสดุให้ใช้ /admin/parcels/{parcel}/pickup',
     security: [['bearerAuth' => []]],
     parameters: [
         new OA\Parameter(name: 'parcel', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
@@ -82,10 +82,10 @@ use OpenApi\Attributes as OA;
             mediaType: 'multipart/form-data',
             schema: new OA\Schema(
                 properties: [
-                    new OA\Property(property: 'tracking_no', type: 'string', example: 'TH123456789'),
-                    new OA\Property(property: 'courier', type: 'string', example: 'Kerry'),
-                    new OA\Property(property: 'sender_name', type: 'string', example: 'Shopee'),
-                    new OA\Property(property: 'note', type: 'string', example: 'วางไว้ที่เคาน์เตอร์'),
+                    new OA\Property(property: 'tracking_no', type: 'string', nullable: true, example: 'TH123456789'),
+                    new OA\Property(property: 'courier', type: 'string', nullable: true, example: 'Kerry'),
+                    new OA\Property(property: 'sender_name', type: 'string', nullable: true, example: 'Shopee'),
+                    new OA\Property(property: 'note', type: 'string', nullable: true, example: 'วางไว้ที่เคาน์เตอร์'),
                     new OA\Property(
                         property: 'images[]',
                         type: 'array',

@@ -79,22 +79,10 @@ export const adminAnnouncementsApi = {
     unwrap(await api.get(`/admin/announcements/${id}`)),
 
   create: async (payload: AnnouncementPayload) =>
-    unwrap(
-      await api.post("/admin/announcements", toFormData(payload), {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
-    ),
+    unwrap(await api.post("/admin/announcements", toFormData(payload))),
 
-  update: async (id: number, payload: AnnouncementPayload) => {
-    const fd = toFormData(payload);
-    fd.append("_method", "PUT");
-
-    return unwrap(
-      await api.post(`/admin/announcements/${id}`, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
-    );
-  },
+  update: async (id: number, payload: AnnouncementPayload) =>
+    unwrap(await api.post(`/admin/announcements/${id}`, toFormData(payload))),
 
   publish: async (id: number) =>
     unwrap(await api.post(`/admin/announcements/${id}/publish`)),

@@ -101,7 +101,8 @@ export default function AdminDashboardPage() {
       </section>
 
       {/* KPI Cards */}
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 ">
+        
         <KpiCard
           title="ห้องทั้งหมด"
           value={kpi?.rooms_total ?? 0}

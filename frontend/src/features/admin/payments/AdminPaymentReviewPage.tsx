@@ -256,10 +256,10 @@ export default function AdminPaymentReviewPage() {
                   <th className="py-3">#</th>
                   <th className="py-3">เลขใบแจ้งหนี้</th>
                   <th className="py-3">ผู้เช่า</th>
-                  <th className="py-3 text-right">ยอดชำระ</th>
-                  <th className="py-3">เวลาชำระ</th>
-                  <th className="py-3">สถานะ</th>
-                  <th className="py-3 text-right">จัดการ</th>
+                  <th className="py-3 text-center">ยอดชำระ</th>
+                  <th className="py-3 text-center">เวลาชำระ</th>
+                  <th className="py-3 text-center">สถานะ</th>
+                  <th className="py-3 text-center">จัดการ</th>
                 </tr>
               </thead>
 
@@ -275,8 +275,8 @@ export default function AdminPaymentReviewPage() {
                       <td className="py-4 font-black">{invoiceNo}</td>
                       <td className="py-4">{tenantName}</td>
                       <td className="py-4 text-right font-black">฿ {money(r.amount)}</td>
-                      <td className="py-4">{fmtDate(paidAt)}</td>
-                      <td className="py-4">
+                      <td className="py-4 text-center font-black">{fmtDate(paidAt)}</td>
+                      <td className="py-4 ">
                         <span className={["inline-flex rounded-full px-3 py-1 text-xs font-extrabold ring-1", badgeClass(r.status)].join(" ")}>
                           {statusLabel(r.status)}
                         </span>

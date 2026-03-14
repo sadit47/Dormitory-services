@@ -32,7 +32,6 @@ export type ParcelUpdatePayload = {
   courier?: string | null;
   sender_name?: string | null;
   note?: string | null;
-  status?: "arrived" | "picked_up" | "cancelled" | string;
   images?: File[];
 };
 
@@ -63,21 +62,10 @@ export const adminParcelsApi = {
     unwrap(await api.get(`/admin/parcels/${id}`)),
 
   create: async (payload: ParcelPayload) =>
-    unwrap(
-      await api.post("/admin/parcels", toFormData(payload), {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
-    ),
+    unwrap(await api.post("/admin/parcels", toFormData(payload))),
 
-  update: async (id: number, payload: ParcelUpdatePayload) => {
-    const fd = toFormData(payload);
-    fd.append("_method", "PUT");
-    return unwrap(
-      await api.post(`/admin/parcels/${id}`, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
-    );
-  },
+  update: async (id: number, payload: ParcelUpdatePayload) =>
+    unwrap(await api.post(`/admin/parcels/${id}`, toFormData(payload))),
 
   pickup: async (id: number) =>
     unwrap(await api.post(`/admin/parcels/${id}/pickup`)),
@@ -86,5 +74,5 @@ export const adminParcelsApi = {
     unwrap(await api.delete(`/admin/parcels/${id}`)),
 
   fileBlob: async (fileId: number) =>
-  api.get(`/files/${fileId}`, { responseType: "blob" }),
+    api.get(`/files/${fileId}`, { responseType: "blob" }),
 };
