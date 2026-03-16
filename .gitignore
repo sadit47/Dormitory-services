@@ -1,0 +1,26 @@
+# root
+.git
+.DS_Store
+*.log
+
+# frontend
+frontend/node_modules
+frontend/dist
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# backend
+backend/vendor
+backend/node_modules
+backend/public/build
+backend/public/hot
+backend/public/storage
+backend/storage/*.key
+backend/.env
+backend/.env.production
+backend/.phpunit.result.cache
+
+# accidental root artifacts
+vendor
+node_modules
