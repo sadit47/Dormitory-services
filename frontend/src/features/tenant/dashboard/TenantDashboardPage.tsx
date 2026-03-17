@@ -104,35 +104,43 @@ export default function TenantDashboardPage() {
   setLoading(true);
 
   Promise.allSettled([
-    tenantDashboardApi.summary(),
-    tenantAnnouncementsApi.list("", 1, 3),
-    tenantParcelsApi.list("", 1, 3),
-  ])
-    .then((results) => {
-      const [summaryRes, annRes, parcelRes] = results;
+  tenantDashboardApi.summary(),
+  tenantAnnouncementsApi.list("", 1, 3),
+  tenantParcelsApi.list("", 1, 3),
+])
+  .then((results) => {
+    const [summaryRes, annRes, parcelRes] = results;
 
-      if (summaryRes.status === "fulfilled") {
-        setData(summaryRes.value);
-      } else {
-        console.error("summary error:", summaryRes.reason);
-        setData(null);
-      }
+    if (summaryRes.status === "fulfilled") {
+      setData(summaryRes.value);
+    } else {
+      setData({
+        user: { id: 0, name: "Tenant", email: "-", role: "tenant" },
+        tenant: null,
+        current_room: null,
+        summary: {
+          total_due: 0,
+          unpaid_invoices: 0,
+          repair_open: 0,
+        },
+        latest_invoices: [],
+        recent_unpaid: [],
+      });
+    }
 
-      if (annRes.status === "fulfilled") {
-        setAnnouncements(normalizePaged<DashboardAnnouncement>(annRes.value).slice(0, 3));
-      } else {
-        console.error("announcements error:", annRes.reason);
-        setAnnouncements([]);
-      }
+    if (annRes.status === "fulfilled") {
+      setAnnouncements(normalizePaged<DashboardAnnouncement>(annRes.value).slice(0, 3));
+    } else {
+      setAnnouncements([]);
+    }
 
-      if (parcelRes.status === "fulfilled") {
-        setParcels(normalizePaged<DashboardParcel>(parcelRes.value).slice(0, 3));
-      } else {
-        console.error("parcels error:", parcelRes.reason);
-        setParcels([]);
-      }
-    })
-    .finally(() => setLoading(false));
+    if (parcelRes.status === "fulfilled") {
+      setParcels(normalizePaged<DashboardParcel>(parcelRes.value).slice(0, 3));
+    } else {
+      setParcels([]);
+    }
+  })
+  .finally(() => setLoading(false));
 }, []);
 
   const unpaidCount = data?.summary?.unpaid_invoices ?? 0;

@@ -46,9 +46,6 @@ export type TenantDashboardSummary = {
 };
 
 export const tenantDashboardApi = {
-  summary: async (): Promise<TenantDashboardSummary> => {
-    const res = await api.get("/tenant/dashboard/summary");
-    console.log("tenant dashboard summary raw:", res?.data);
-    return unwrap(res);
-    }, // ✅ ไม่มี / นำหน้า
+  summary: async (): Promise<TenantDashboardSummary> =>
+    unwrap(await api.get("/tenant/dashboard/summary")), // ✅ ไม่มี / นำหน้า
 };
