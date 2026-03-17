@@ -51,7 +51,9 @@ class DashboardController extends Controller
                 ], 'Tenant not found', 200);
             }
 
-            $tenant->load(['currentRoom']);
+            $tenant->load(['currentRoom', 'currentAssignment.room']);
+
+            $currentRoom = $tenant->currentRoom ?? $tenant->currentAssignment?->room;
 
             $totalDue = 0.0;
             $unpaidCount = 0;
@@ -71,8 +73,12 @@ class DashboardController extends Controller
 
                 $invoiceCols = [
                     'id', 'invoice_no', 'type', 'period_month', 'period_year',
-                    'total', 'due_date', 'status', 'created_at', 'room_id',
+                    'total', 'due_date', 'status', 'created_at',
                 ];
+
+                if (Schema::hasColumn('invoices', 'room_id')) {
+                    $invoiceCols[] = 'room_id';
+                }
 
                 if (Schema::hasColumn('invoices', 'receipt_no')) {
                     $invoiceCols[] = 'receipt_no';
@@ -142,7 +148,7 @@ class DashboardController extends Controller
                         'status'         => $inv->status,
                         'receipt_no'     => $inv->getAttribute('receipt_no'),
                         'created_at'     => $inv->created_at,
-                        'room_id'        => $inv->room_id,
+                        'room_id'        => $inv->getAttribute('room_id'),
                         'payment_status' => $paymentStatusByInvoice[$inv->id] ?? null,
                         'room'           => $inv->room ? $inv->room->only(array_keys($inv->room->getAttributes())) : null,
                     ];
@@ -160,7 +166,7 @@ class DashboardController extends Controller
                         'status'         => $inv->status,
                         'receipt_no'     => $inv->getAttribute('receipt_no'),
                         'created_at'     => $inv->created_at,
-                        'room_id'        => $inv->room_id,
+                        'room_id'        => $inv->getAttribute('room_id'),
                         'payment_status' => $paymentStatusByInvoice[$inv->id] ?? null,
                         'room'           => $inv->room ? $inv->room->only(array_keys($inv->room->getAttributes())) : null,
                     ];
@@ -220,7 +226,7 @@ class DashboardController extends Controller
                 'tenant' => $tenant->only([
                     'id', 'citizen_id', 'address', 'emergency_contact', 'start_date', 'end_date'
                 ]),
-                'current_room' => $tenant->currentRoom,
+                'current_room' => $currentRoom,
                 'summary' => [
                     'total_due'       => $totalDue,
                     'unpaid_invoices' => $unpaidCount,
@@ -231,7 +237,8 @@ class DashboardController extends Controller
                 'paid_history'    => $paidHistory,
                 'debug' => [
                     'tenant_id' => $tenant->id,
-                    'has_room'  => $tenant->currentRoom ? true : false,
+                    'has_room'  => $currentRoom ? true : false,
+                    'current_assignment_room_id' => $tenant->currentAssignment?->room_id,
                 ],
             ];
 
