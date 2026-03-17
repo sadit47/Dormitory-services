@@ -101,26 +101,39 @@ export default function TenantDashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
+  setLoading(true);
 
-    Promise.all([
-      tenantDashboardApi.summary(),
-      tenantAnnouncementsApi.list("", 1, 3),
-      tenantParcelsApi.list("", 1, 3),
-    ])
-      .then(([summary, annRes, parcelRes]) => {
-        setData(summary);
-        setAnnouncements(normalizePaged<DashboardAnnouncement>(annRes).slice(0, 3));
-        setParcels(normalizePaged<DashboardParcel>(parcelRes).slice(0, 3));
-      })
-      .catch((err) => {
-        console.error("TenantDashboard load error:", err);
+  Promise.allSettled([
+    tenantDashboardApi.summary(),
+    tenantAnnouncementsApi.list("", 1, 3),
+    tenantParcelsApi.list("", 1, 3),
+  ])
+    .then((results) => {
+      const [summaryRes, annRes, parcelRes] = results;
+
+      if (summaryRes.status === "fulfilled") {
+        setData(summaryRes.value);
+      } else {
+        console.error("summary error:", summaryRes.reason);
         setData(null);
+      }
+
+      if (annRes.status === "fulfilled") {
+        setAnnouncements(normalizePaged<DashboardAnnouncement>(annRes.value).slice(0, 3));
+      } else {
+        console.error("announcements error:", annRes.reason);
         setAnnouncements([]);
+      }
+
+      if (parcelRes.status === "fulfilled") {
+        setParcels(normalizePaged<DashboardParcel>(parcelRes.value).slice(0, 3));
+      } else {
+        console.error("parcels error:", parcelRes.reason);
         setParcels([]);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+      }
+    })
+    .finally(() => setLoading(false));
+}, []);
 
   const unpaidCount = data?.summary?.unpaid_invoices ?? 0;
 
