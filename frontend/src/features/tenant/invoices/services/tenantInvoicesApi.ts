@@ -66,7 +66,12 @@ export const tenantInvoicesApi = {
   show: async (id: number): Promise<TenantInvoiceDetail> =>
     unwrap(await api.get(`/tenant/invoices/${id}`)),
 
-  // ✅ เปิดดู PDF ผ่าน blob (แนบ auth ผ่าน axios ได้ชัวร์)
   openPdfBlob: async (id: number) =>
     api.get(`/tenant/invoices/${id}/pdf`, { responseType: "blob" }),
+
+  downloadPdfBlob: async (id: number) =>
+    api.get(`/tenant/invoices/${id}/pdf`, {
+      params: { download: 1 },
+      responseType: "blob",
+    }),
 };

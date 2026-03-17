@@ -63,13 +63,65 @@ export default function TenantInvoiceDetailPage() {
   const openPdf = async () => {
     if (!data?.id) return;
 
-    const res = await tenantInvoicesApi.openPdfBlob(data.id);
+    try {
+      const res = await tenantInvoicesApi.openPdfBlob(data.id);
+      const blob = new Blob([res.data], { type: "application/pdf" });
+
+      const ua = navigator.userAgent || "";
+      const isIOS = /iPad|iPhone|iPod/.test(ua);
+      const isAndroid = /Android/.test(ua);
+      const isMobile = isIOS || isAndroid;
+
+      // iPhone/iPad: ใช้ FileReader จะเปิดง่ายกว่า blob url
+      if (isIOS) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const dataUrl = reader.result as string;
+          window.location.href = dataUrl;
+        };
+        reader.readAsDataURL(blob);
+        return;
+      }
+
+      const url = window.URL.createObjectURL(blob);
+
+      if (isMobile) {
+        // มือถือเปิดหน้าเดิม
+        window.location.href = url;
+      } else {
+        // desktop เปิดแท็บใหม่
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+
+      setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
+    } catch (error) {
+      console.error("open pdf failed", error);
+      alert("ไม่สามารถเปิด PDF ได้");
+    }
+    
+  };
+  const downloadPdf = async () => {
+  if (!data?.id) return;
+
+  try {
+    const res = await tenantInvoicesApi.downloadPdfBlob(data.id);
     const blob = new Blob([res.data], { type: "application/pdf" });
     const url = window.URL.createObjectURL(blob);
 
-    window.open(url, "_blank", "noopener,noreferrer");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `invoice-${data.invoice_no}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
     setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
-  };
+  } catch (error) {
+    console.error("download pdf failed", error);
+    alert("ดาวน์โหลด PDF ไม่สำเร็จ");
+  }
+};
+
 
   if (loading) {
     return (
@@ -124,6 +176,13 @@ export default function TenantInvoiceDetailPage() {
               className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-[0_8px_20px_rgba(15,23,42,0.04)] transition hover:bg-slate-50"
             >
               👁️ เปิดดู PDF
+            </button>
+
+            <button
+              onClick={downloadPdf}
+              className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-[0_8px_20px_rgba(15,23,42,0.04)] transition hover:bg-slate-50"
+            >
+              ⬇️ ดาวน์โหลด PDF
             </button>
 
             {canUploadSlip && (
