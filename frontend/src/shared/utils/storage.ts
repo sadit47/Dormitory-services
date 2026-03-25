@@ -6,4 +6,9 @@ export const storage = {
   getRole: () => (localStorage.getItem("role") as "admin" | "tenant" | null),
   setRole: (r: "admin" | "tenant") => localStorage.setItem("role", r),
   clearRole: () => localStorage.removeItem("role"),
+
+  clearAuth: () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+  },
 };
